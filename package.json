@@ -4,16 +4,16 @@
   "description": "Production-ready Esports Tournament Standings Manager designed for Render.com hosting with PostgreSQL, Prisma, Express, React, Vite & Tailwind CSS",
   "private": true,
   "scripts": {
-    "render-build": "npm install && npm run build:server && npm run build:client",
-    "build:server": "cd server && npm install && npx prisma generate",
+    "render-build": "npm install && npx prisma generate --schema=prisma/schema.prisma && npm run build:server && npm run build:client",
+    "build:server": "cd server && npm install",
     "build:client": "cd client && npm install && npm run build",
     "build": "npm run render-build",
     "start": "cd server && node src/index.js",
     "server": "cd server && npm run dev",
     "client": "cd client && npm run dev",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "prisma:generate": "npx prisma generate",
-    "prisma:migrate": "npx prisma migrate deploy",
+    "prisma:generate": "npx prisma generate --schema=prisma/schema.prisma",
+    "prisma:migrate": "npx prisma migrate deploy --schema=prisma/schema.prisma",
     "prisma:seed": "node prisma/seed.js"
   },
   "keywords": [
