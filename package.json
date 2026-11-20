@@ -1,0 +1,40 @@
+{
+  "name": "warzone-esports-tournament-manager",
+  "version": "2.0.0",
+  "description": "Production-ready Esports Tournament Standings Manager designed for Render.com hosting with PostgreSQL, Prisma, Express, React, Vite & Tailwind CSS",
+  "private": true,
+  "scripts": {
+    "render-build": "npm install && npm run build:server && npm run build:client",
+    "build:server": "cd server && npm install && npx prisma generate",
+    "build:client": "cd client && npm install && npm run build",
+    "build": "npm run render-build",
+    "start": "cd server && node src/index.js",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "prisma:generate": "npx prisma generate",
+    "prisma:migrate": "npx prisma migrate deploy",
+    "prisma:seed": "node prisma/seed.js"
+  },
+  "keywords": [
+    "esports",
+    "tournament",
+    "leaderboard",
+    "render",
+    "postgresql",
+    "prisma",
+    "react",
+    "vite",
+    "express",
+    "tailwind"
+  ],
+  "author": "WARZONE OFFICIAL",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "prisma": "^5.22.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0"
+  }
+}

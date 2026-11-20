@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --void: #0a0a0c;
+  --void-deep: #050507;
+  --panel: rgba(18, 18, 22, 0.88);
+  --border: rgba(255, 255, 255, 0.09);
+  --red: #FF3434;
+  --red-bright: #ff5252;
+  --gold: #FFD34D;
+  --gold-bright: #ffe58a;
+}
+
+body.light-mode {
+  --void: #f1f2f6;
+  --void-deep: #e4e7ed;
+  --panel: rgba(255, 255, 255, 0.94);
+  --border: rgba(0, 0, 0, 0.1);
+  background-color: var(--void);
+  color: #11141a;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--red);
+}
+
+/* Cosmic Nebula Animation */
+@keyframes nebulaBreathe {
+  0% { transform: scale(1) translate(0, 0); }
+  50% { transform: scale(1.06) translate(1.5%, 1.2%); }
+  100% { transform: scale(1.02) translate(-1.2%, -1%); }
+}
+
+.animate-nebula {
+  animation: nebulaBreathe 24s ease-in-out infinite alternate;
+}
+
+/* Red Button Glowing Shimmer */
+.btn-red-glow {
+  background: linear-gradient(135deg, #FF3434 0%, #b81c1c 100%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 18px -4px rgba(255, 52, 52, 0.6);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-red-glow:hover {
+  background: linear-gradient(135deg, #ff4d4d 0%, #c92323 100%);
+  box-shadow: 0 6px 24px -2px rgba(255, 52, 52, 0.85);
+  border-color: rgba(255, 255, 255, 0.45);
+  transform: translateY(-1px);
+}
+
+.btn-gold-glow {
+  background: linear-gradient(135deg, #FFE58A 0%, #FFD34D 100%);
+  color: #120e03;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 16px -4px rgba(255, 211, 77, 0.5);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-gold-glow:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 6px 22px -2px rgba(255, 211, 77, 0.75);
+  transform: translateY(-1px);
+}
+
+/* Shake Animation for Password Error */
+@keyframes shakeAnim {
+  10%, 90% { transform: translate3d(-3px, 0, 0); }
+  20%, 80% { transform: translate3d(5px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-7px, 0, 0); }
+  40%, 60% { transform: translate3d(7px, 0, 0); }
+}
+
+.animate-shake {
+  animation: shakeAnim 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* Flash animation on team score update */
+@keyframes rowFlash {
+  0% {
+    background: rgba(255, 52, 52, 0.35);
+    transform: scale(1.01);
+  }
+  100% {
+    background: rgba(255, 255, 255, 0.02);
+    transform: scale(1);
+  }
+}
+
+.row-flash {
+  animation: rowFlash 1.6s ease-out;
+}

@@ -1,173 +1,142 @@
-# 🏆 ESPORTS TOURNAMENT STANDINGS MANAGER
+# 🚀 WARZONE OFFICIAL — ESPORTS TOURNAMENT STANDINGS MANAGER
+## Production Fullstack Application specifically engineered for Render.com Cloud Hosting
 
-> **Brand:** WARZONE OFFICIAL  
-> **Style:** Premium Esports Gaming Theme with Red Glowing Accents, Luxe Gold Highlights, and Glassmorphism Dashboard  
-> **Target Games:** Free Fire, PUBG Mobile, Call of Duty: Warzone, Apex Legends, Battle Royale Scrims & Tournaments
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
 
 ---
 
 ## 🌟 Overview
 
-The **Esports Tournament Standings Manager** is a high-performance tournament management dashboard designed specifically for esports organizers, broadcast streams, scrim administrators, and gaming leagues. 
+**WARZONE OFFICIAL Esports Tournament Standings Manager** is a production-ready, fullstack Battle Royale tournament leaderboard and administration suite. It is built with **React, Vite, Tailwind CSS, Node.js, Express, Prisma ORM, and Render Managed PostgreSQL**, featuring S3-compatible permanent asset storage.
 
-It provides real-time scoring, automatic rank calculations, group stage management, complete match auditing with rollback/undo, dynamic theme customization, and 2.5x high-resolution PNG graphic exports formatted for Discord, Twitter, and Instagram esports announcements.
-
----
-
-## 🚀 Key Features
-
-### 1. 🎨 Esports Design & Branding
-- **Dark Void Gaming Theme:** Deep charcoal `#0a0a0c` background with animated cosmic nebula drift and twinkling particle stars.
-- **Warzone Red (`#FF3434`)** glowing action buttons, hover glow animations, and rank blocks.
-- **Luxe Gold (`#FFD34D`)** accents, #1 leader badge, top-3 highlights, and total score pill.
-- **Dynamic Leaderboard:** Pixel-perfect recreation of official esports scrim standing tables.
-- **Fully Responsive:** Adapts smoothly across 4K displays, ultrawides, laptops, tablets, and smartphones.
-
-### 2. ⚡ Top Navigation Bar
-- **Brand Identity:** Tournament logo, organization title, and subtitle.
-- **Admin Lock/Unlock:** Secure password-protected mode toggle (`admin123` by default).
-- **Dark/Light Mode:** Instant switch between dark esports mode and crisp light mode.
-- **Share Standings:** One-click public link and iframe embed code generator.
-- **Fullscreen Broadcast Mode:** Clean full-screen display optimized for live stream overlays and stage monitors.
-- **Settings Drawer:** Access all tournament configurations, scoring rules, and theme engines.
-- **Download PNG Button:** Instant 2.5x retina-grade image export.
-
-### 3. 👥 Multi-Group Tournament Management
-- Supports **GROUP A**, **GROUP B**, **GROUP C**, **GROUP D**, and unlimited additional groups.
-- Instant switching between groups without page reloads.
-- Add, rename, duplicate, reorder, and delete groups.
-- Each group maintains completely isolated squad rosters, scores, and match history logs.
-
-### 4. 📊 Dynamic Main Leaderboard
-- **Standard Battle Royale Columns:** `#` (Rank), `TEAM NAME`, `M.P` (Matches Played), `WIN`, `POS PTS` (Position Points), `KILL PTS` (Kill Points), `TOTAL` (Total Points).
-- **Automatic Calculations:** `Total Points = Position Points + (Kill Points × Multiplier)`.
-- **Automatic Tiebreakers:** Total Points → Wins → Kill Points → Position Points.
-- **Top 3 Highlights:** 
-  - Rank 1: Gold glowing border on team container, gold trophy icon 🏆, gold total points pill badge.
-  - Rank 2: Silver medal 🥈, vibrant red total points pill badge.
-  - Rank 3: Bronze medal 🥉, vibrant red total points pill badge.
-- **Manual Ranking Override:** Toggle between automatic mathematical sorting and custom drag-and-drop ordering.
-- **Inline Cell Editing:** Direct double-click editing on the leaderboard in Admin Mode.
-
-### 5. ⚡ Quick Point Update Panel (Right-Side Control)
-- **Select Group:** Synced with active tournament stage.
-- **Select Squad:** Dropdown showing team name and current total points.
-- **Match Number:** Automatically increments or custom number entry.
-- **Finish Position Selector:** Pre-populates Position Points according to official Battle Royale rules (1st Booyah = 12 pts, 2nd = 9 pts, etc.).
-- **Position Points & Kill Points:** Editable numeric fields.
-- **Win / Booyah Checkbox:** Auto-checked when 1st position is chosen.
-- **SAVE MATCH RESULT:** Large red glowing button with row highlight flash animation and sound feedback.
-- **RESET FORM & UNDO LAST UPDATE:** One-click rollback and clear.
-
-### 6. 🕒 Match History & Audit Log
-- Chronological feed of all recorded match scores.
-- Filter by squad or match number.
-- **Edit Historical Results:** Edit position or kills from previous matches; squad cumulative stats automatically recompute.
-- **Delete Record:** Safely rolls back matches played, wins, position points, and kills.
-- **Undo Latest & Clear History:** With modal safeguards.
-
-### 7. 🎨 Visual Customization & Themes
-- **Preset Themes:**
-  1. *Red Esports (Default Warzone)*
-  2. *Gold Premium*
-  3. *Blue Gaming*
-  4. *Purple Neon*
-  5. *Custom Theme (Full RGB Color Pickers)*
-- Dynamic CSS Variable injection updates all elements in real-time.
-
-### 8. 🔒 Secure Admin Authentication
-- Password-protected admin access.
-- SHA-256 hashed password verification (no plaintext passwords in frontend storage).
-- Default Admin Password: `admin123` (customizable in Settings).
-- Viewer Mode: Public viewers cannot tamper with scores, roster, or settings.
-
-### 9. 💾 Persistent Database & Local Storage
-- **Offline-First:** Automatically saves to browser `localStorage` and `IndexedDB`.
-- **Zero-Dependency Windows Server:** Built-in PowerShell .NET HttpListener provides a local server and JSON database on `http://localhost:8080`.
-- **Node.js Express + SQLite Backend:** Included in `server/` with REST API endpoints (`/api/tournament`, `/api/ping`).
+The application preserves the exact esports gaming aesthetic from the reference design:
+- Premium deep void `#0a0a0c` background with animated cosmic nebula glow
+- Vibrant red (`#FF3434`) glowing buttons and rank blocks
+- Luxe gold (`#FFD34D`) leader highlight, trophies, medals, and stadium pill badges
+- Real-time Battle Royale scoring, tiebreaker rankings, and match history rollback
+- 2.5x high-resolution PNG graphic generator for Discord and social media scrim announcements
 
 ---
 
-## 📁 Project Structure
+## 🛠 Technology Stack
 
-```text
-D:\stream emulator\
-├── index.html                  # Main application dashboard
-├── run-server.bat              # One-click Windows launcher (starts server & opens browser)
-├── run-server.ps1              # Built-in PowerShell .NET HttpListener HTTP/REST server
-├── README.md                   # Comprehensive project documentation
-├── INSTRUCTIONS.md             # User manual & quick start guide
-├── assets/
-│   ├── warzone-logo.png        # Official Warzone/Warborn emblem logo
-│   └── default-teams/          # Custom squad icons
-├── css/
-│   ├── main.css                # Layout, typography, theme tokens, cosmic nebula fx
-│   ├── leaderboard.css         # Leaderboard rows, top 3 highlights, stadium badges
-│   ├── panels.css              # Quick update form, history log, glassmorphism cards
-│   └── modals.css              # Settings drawer, admin modal, dialogs, toasts
-├── js/
-│   ├── config.js               # Default branding, scoring matrix, theme presets
-│   ├── state.js                # State store, IndexedDB & localStorage engine, sync
-│   ├── leaderboard.js          # Standings component, ranking algorithms, drag & drop
-│   ├── quick-update.js         # Match entry form handler & validation
-│   ├── match-history.js        # Audit log, edit record modal, rollback engine
-│   ├── groups.js               # Multi-group switcher & manager
-│   ├── admin.js                # SHA-256 password protection & session manager
-│   ├── settings.js             # Visual customizer & tournament settings controller
-│   ├── export.js               # PNG (html2canvas), PDF, CSV, JSON, and share links
-│   └── app.js                  # Global bootstrap, synth audio, toasts, shortcuts
-└── server/
-    ├── package.json            # Node.js dependencies (express, cors, sqlite3)
-    ├── database.js             # SQLite database table initializations
-    └── server.js               # Express REST API & static file server
+| Layer | Technology |
+| :--- | :--- |
+| **Frontend** | React 18, Vite, Tailwind CSS, Lucide Icons, html2canvas |
+| **Backend API** | Node.js (v18/v20/v22), Express, Helmet, CORS, Cookie-Parser, Multer |
+| **Database & ORM** | Render Managed PostgreSQL, Prisma ORM |
+| **Authentication** | Secure Admin Authentication, bcryptjs password hashing, JWT HTTP-only Cookies |
+| **Object Storage** | S3-Compatible Storage (Cloudflare R2, AWS S3, Backblaze B2, Supabase) with PostgreSQL base64 fallback |
+| **Hosting & CI/CD** | Render.com (Blueprints `render.yaml`, automatic deploy on push to GitHub) |
+
+---
+
+## 🌐 Public vs. Admin Routes
+
+- **Public Standings URL:** `https://your-app.onrender.com/`
+  - Public spectators can browse tournament standings, search squads, switch groups (Group A, B, C, D), view match history, generate public share links, and download 2.5x high-res PNG standings graphics.
+  - Visitors cannot edit scores or modify rosters.
+- **Admin Management URL:** `https://your-app.onrender.com/admin` (or click **"Viewer Mode"** on the topbar)
+  - Protected by secure admin password authentication.
+  - Default master password: **`admin123`**
+  - Enables Quick Point Update, live inline leaderboard editing, roster management, squad logo uploads, historical match editing and rollbacks, scoring matrix configuration, and JSON backup/restore.
+
+---
+
+## 🚀 Step-by-Step Render.com Deployment Guide
+
+Deploying to Render takes less than 3 minutes using the included `render.yaml` Blueprint.
+
+### Step 1: Push Project to GitHub
+1. In your local project directory:
+   ```bash
+   git add .
+   git commit -m "feat: production-ready fullstack app for Render"
+   git push -u origin main
+   ```
+
+### Step 2: Deploy with Render Blueprint (Automatic)
+1. Log in to [Render.com](https://render.com).
+2. Go to your **Render Dashboard** and click **"New +"** in the top right.
+3. Select **"Blueprint"**.
+4. Connect your GitHub repository: `https://github.com/Nayem0089/Nayemalam`.
+5. Render will automatically read `render.yaml` and provision:
+   - **`warzone-tournament-manager`** (Node.js Web Service)
+   - **`warzone-postgres`** (Managed PostgreSQL Database on Free Tier)
+6. Click **"Apply"** to start the deployment.
+
+Render will run `npm run render-build`, generate Prisma client, build the React frontend, run database migrations, and start the Express server!
+
+### Step 3: Run Initial Database Seed (Optional)
+To populate the default 12 official reference teams and sample matches in PostgreSQL:
+1. In the Render Dashboard, click your **`warzone-tournament-manager`** Web Service.
+2. Go to the **"Shell"** tab.
+3. Run:
+   ```bash
+   npm run prisma:seed
+   ```
+4. Your database is now populated with the complete reference tournament data!
+
+---
+
+## 🔐 Environment Variables Reference
+
+Render automatically sets `DATABASE_URL`, `PORT`, and `NODE_ENV`. You can optionally customize these in your Render Web Service settings:
+
+| Variable | Description | Default / Example |
+| :--- | :--- | :--- |
+| `DATABASE_URL` | PostgreSQL connection string | *Automatically provided by Render* |
+| `PORT` | HTTP server port | `10000` or `8080` (auto-detected) |
+| `NODE_ENV` | Environment mode | `production` |
+| `JWT_SECRET` | Secret key for admin session tokens | *Auto-generated by render.yaml* |
+| `ADMIN_DEFAULT_PASSWORD` | Master password for administrator access | `admin123` |
+| `S3_ENDPOINT` | S3 API endpoint for asset hosting | `https://<id>.r2.cloudflarestorage.com` *(Optional)* |
+| `S3_BUCKET` | S3 bucket name | `warzone-assets` *(Optional)* |
+| `S3_ACCESS_KEY` | S3 Access Key ID | *(Optional)* |
+| `S3_SECRET_KEY` | S3 Secret Access Key | *(Optional)* |
+| `S3_REGION` | S3 bucket region | `auto` |
+| `S3_PUBLIC_URL` | Public CDN URL for images | `https://pub-id.r2.dev` *(Optional)* |
+
+> 💡 **Render Free Plan Tip:** If S3 credentials are not set, the application automatically stores uploaded squad logos and tournament emblems permanently inside PostgreSQL! No uploads are lost, and zero extra paid services are required.
+
+---
+
+## 💾 Database Backup and Restore
+
+### 1. In-App Backup (Recommended):
+1. Log in to the Admin Panel (`/admin` or topbar button).
+2. Open **Settings (⚙)** → **Data & Backup** tab (or click **"Backup JSON"** on the right sidebar).
+3. Click **"Export JSON Backup"** to download `warzone_backup_YYYY-MM-DD.json`.
+4. To restore on any new server or staging environment, simply click **"Choose Backup File"** and upload the `.json` file!
+
+### 2. Direct PostgreSQL Dump (CLI):
+```bash
+# Export from Render PostgreSQL
+pg_dump "$DATABASE_URL" > warzone_dump.sql
+
+# Restore to PostgreSQL
+psql "$DATABASE_URL" < warzone_dump.sql
 ```
 
 ---
 
-## 💻 Installation & Running Instructions
+## 🖥 Localhost Development Instructions
 
-### Option 1: One-Click Windows Launcher (Recommended)
-1. Double-click `run-server.bat`.
-2. The script will detect your environment:
-   - If Node.js is installed, it runs the Express + SQLite server.
-   - If Node.js is not installed, it automatically launches the built-in Windows Standalone Server via PowerShell!
-3. Your default browser opens automatically at `http://localhost:8080/index.html`.
-
-### Option 2: Direct Offline Execution (Zero Setup)
-- Double-click `index.html` directly in your file explorer to open it in Chrome, Edge, Brave, or Firefox.
-- All features (Auto-save, IndexedDB, PNG export, Admin mode, scoring calculations) work 100% offline!
-
-### Option 3: Node.js Express + SQLite Server
+To test or run locally on your machine:
 ```bash
-cd "D:\stream emulator\server"
+# 1. Install root dependencies
 npm install
+
+# 2. Build client and generate Prisma client
+npm run render-build
+
+# 3. Start local server
 npm start
 ```
-The server will run on `http://localhost:8080` with persistent SQLite storage in `server/tournament.db`.
-
----
-
-## 🔐 Admin Mode & Password
-
-- Default Admin Password: **`admin123`**
-- To unlock: Click **"Viewer Mode"** in the top navigation bar, enter `admin123`, and click **Unlock Admin**.
-- To change password: Open **Settings** (⚙) → **Security** tab → Enter current and new passwords.
-
----
-
-## 💾 Backup and Restore Procedures
-
-### To Create a Backup:
-1. Open **Settings** (⚙) → **Data & Backup** tab (or click **"Backup JSON"** on the Quick Actions panel).
-2. Click **"Export Tournament JSON Backup"**.
-3. A JSON file (`tournament_backup_YYYY-MM-DD.json`) containing all groups, rosters, match history, and theme settings will be downloaded to your computer.
-
-### To Restore from a Backup:
-1. Open **Settings** (⚙) → **Data & Backup** tab.
-2. Under **"Restore Tournament"**, click **Choose File** and select your `.json` backup file.
-3. The system will validate the file, restore all squads, groups, scores, and history, and refresh the dashboard instantly.
+Open [http://localhost:8080](http://localhost:8080) in your browser.
+Health check endpoint: [http://localhost:8080/health](http://localhost:8080/health)
 
 ---
 
 ## 📄 License
-MIT License. Built for professional esports tournament organizers and competitive gaming scrims.
+MIT License. Built for professional esports organizers and competitive gaming leagues.

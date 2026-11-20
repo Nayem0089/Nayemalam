@@ -1,0 +1,113 @@
+// PRISMA SCHEMA FOR WARZONE OFFICIAL ESPORTS TOURNAMENT STANDINGS MANAGER
+// Provider: PostgreSQL (Render Managed Database)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 1. Admin Authentication Table
+model Admin {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("admins")
+}
+
+// 2. Global Tournament & Branding Settings
+model TournamentSetting {
+  id                 String   @id @default("default")
+  websiteName        String   @default("WARZONE OFFICIAL")
+  websiteLogo        String   @default("/assets/warzone-logo.png")
+  tournamentName     String   @default("DAILY PAID SCRIM")
+  tournamentSubtitle String   @default("OVERALL STANDINGS")
+  matchInfoLine      String   @default("WEEK 01 DAY 01")
+  footerText         String   @default("Powered by WARZONE OFFICIAL")
+  tournamentLogo     String   @default("/assets/warzone-logo.png")
+  currentTheme       String   @default("redEsports")
+  customTheme        Json?
+  killWeight         Float    @default(1.0)
+  placementPoints    Json     // Key-value map: 1: 12, 2: 9, 3: 8, etc.
+  tiebreakerPriority Json     // Array: ["totalPoints", "wins", "killPoints", "positionPoints"]
+  autoRanking        Boolean  @default(true)
+  updatedAt          DateTime @updatedAt
+
+  @@map("tournament_settings")
+}
+
+// 3. Tournament Groups (Stages: Group A, Group B, Finals, etc.)
+model Group {
+  id        String        @id @default(uuid())
+  name      String        @unique
+  order     Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  teams     Team[]
+  matches   MatchResult[]
+
+  @@map("groups")
+}
+
+// 4. Teams / Squads in a Group
+model Team {
+  id             String        @id @default(uuid())
+  groupId        String
+  group          Group         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  name           String
+  logo           String        @default("")
+  matches        Int           @default(0)
+  wins           Int           @default(0)
+  positionPoints Float         @default(0)
+  killPoints     Float         @default(0)
+  total          Float         @default(0)
+  order          Int           @default(0)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  matchesHistory MatchResult[]
+
+  @@index([groupId])
+  @@map("teams")
+}
+
+// 5. Match History & Audit Log
+model MatchResult {
+  id             String   @id @default(uuid())
+  groupId        String
+  group          Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  teamId         String
+  team           Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  matchNumber    Int      @default(1)
+  position       Int      @default(0)
+  positionPoints Float    @default(0)
+  kills          Int      @default(0)
+  killPoints     Float    @default(0)
+  totalPoints    Float    @default(0)
+  isWin          Boolean  @default(false)
+  notes          String?  @default("")
+  createdAt      DateTime @default(now())
+
+  @@index([groupId])
+  @@index([teamId])
+  @@map("match_results")
+}
+
+// 6. Permanent Uploaded Assets (S3 references or PostgreSQL base64 fallback)
+model UploadedAsset {
+  id           String   @id @default(uuid())
+  key          String   @unique
+  originalName String
+  mimeType     String
+  size         Int
+  url          String
+  dataBase64   String?  // Fallback for Render Free Tier if S3 credentials not provided
+  createdAt    DateTime @default(now())
+
+  @@map("uploaded_assets")
+}
