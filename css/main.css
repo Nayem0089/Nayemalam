@@ -1,0 +1,483 @@
+/* ==========================================================================
+   ESPORTS TOURNAMENT STANDINGS MANAGER
+   Main Theme, CSS Variables, Background & Layout Styles
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap');
+
+:root {
+  /* Core Dark Gaming Palette */
+  --void: #0a0a0c;
+  --void-deep: #050507;
+  --panel: rgba(18, 18, 22, 0.88);
+  --panel-glass: rgba(22, 22, 28, 0.72);
+  --panel-card: #0e0e12;
+  --border: rgba(255, 255, 255, 0.09);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-focus: rgba(255, 211, 77, 0.45);
+
+  /* Primary Accent: Warzone Red */
+  --red: #FF3434;
+  --red-bright: #ff5252;
+  --red-deep: #b81c1c;
+  --primary-glow: rgba(255, 52, 52, 0.55);
+
+  /* Secondary Accent: Luxe Gold */
+  --gold: #FFD34D;
+  --gold-bright: #ffe58a;
+  --gold-deep: #b8860b;
+  --secondary-glow: rgba(255, 211, 77, 0.45);
+
+  /* Medals */
+  --silver: #cfd4dc;
+  --bronze: #cd8a4f;
+
+  /* Text Hierarchy */
+  --text-main: #ffffff;
+  --text-dim: #9a9aa5;
+  --text-faint: #63626e;
+  --text-dark: #120e03;
+
+  /* UI Feedback */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+
+  /* Typography */
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Teko', sans-serif;
+  --font-esports: 'Rajdhani', sans-serif;
+
+  /* Shapes & Effects */
+  --radius-lg: 16px;
+  --radius-md: 10px;
+  --radius-sm: 6px;
+  --radius-pill: 9999px;
+  --shadow-deep: 0 20px 50px -15px rgba(0, 0, 0, 0.85);
+  --shadow-red-glow: 0 0 25px rgba(255, 52, 52, 0.4);
+  --shadow-gold-glow: 0 0 20px rgba(255, 211, 77, 0.35);
+}
+
+/* Light Mode Overrides */
+body.light-mode {
+  --void: #f1f2f6;
+  --void-deep: #e4e7ed;
+  --panel: rgba(255, 255, 255, 0.94);
+  --panel-glass: rgba(255, 255, 255, 0.85);
+  --panel-card: #ffffff;
+  --border: rgba(0, 0, 0, 0.1);
+  --border-subtle: rgba(0, 0, 0, 0.05);
+  --text-main: #11141a;
+  --text-dim: #555c6d;
+  --text-faint: #8a92a3;
+  --shadow-deep: 0 15px 35px -10px rgba(0, 0, 0, 0.15);
+}
+
+/* ==========================================================================
+   RESET & BASE STYLES
+   ========================================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100vh;
+}
+
+body {
+  background: var(--void);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  position: relative;
+}
+
+::selection {
+  background: var(--red);
+  color: #ffffff;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: var(--radius-pill);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--red);
+}
+
+/* ==========================================================================
+   DYNAMIC BACKGROUND FX: COSMIC NEBULA & TWINKLING STARS
+   ========================================================================== */
+.bg-cosmic-fx {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  background: var(--void);
+}
+
+.bg-cosmic-fx .nebula-glow {
+  position: absolute;
+  inset: -15%;
+  background:
+    radial-gradient(750px 600px at 15% 15%, rgba(255, 52, 52, 0.22), transparent 60%),
+    radial-gradient(800px 650px at 85% 75%, rgba(255, 211, 77, 0.14), transparent 60%),
+    radial-gradient(600px 500px at 80% 15%, rgba(255, 52, 52, 0.14), transparent 55%),
+    radial-gradient(550px 500px at 20% 85%, rgba(255, 211, 77, 0.10), transparent 55%);
+  filter: blur(25px);
+  animation: nebulaBreathe 24s ease-in-out infinite alternate;
+}
+
+@keyframes nebulaBreathe {
+  0% { transform: scale(1) translate(0, 0); }
+  50% { transform: scale(1.06) translate(1.5%, 1.2%); }
+  100% { transform: scale(1.02) translate(-1.2%, -1%); }
+}
+
+.bg-cosmic-fx .stars,
+.bg-cosmic-fx .stars2 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 2px;
+  background: transparent;
+  border-radius: 50%;
+}
+
+.bg-cosmic-fx .stars {
+  animation: starTwinkle 4s ease-in-out infinite alternate;
+}
+
+.bg-cosmic-fx .stars2 {
+  animation: starTwinkle 6s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes starTwinkle {
+  0% { opacity: 0.25; }
+  50% { opacity: 0.85; }
+  100% { opacity: 0.35; }
+}
+
+.bg-cosmic-fx .vignette-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(1600px 1000px at 50% 20%, transparent 40%, rgba(5, 5, 7, 0.8) 100%);
+}
+
+/* ==========================================================================
+   APP CONTAINER & HEADER NAVIGATION
+   ========================================================================== */
+.app-container {
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 18px 24px 60px;
+}
+
+/* Top Navigation Bar */
+.top-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 20px;
+  margin-bottom: 20px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--shadow-deep);
+  flex-wrap: wrap;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.nav-logo-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: rgba(255, 52, 52, 0.15);
+  border: 1px solid rgba(255, 52, 52, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.nav-logo-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.nav-titles {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-brand-title {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-main);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-brand-title span {
+  color: var(--gold);
+}
+
+.nav-subtitle {
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Topbar Actions */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Admin Banner */
+.admin-notice-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  margin-bottom: 16px;
+  background: linear-gradient(90deg, rgba(255, 52, 52, 0.16), rgba(255, 211, 77, 0.12));
+  border: 1px solid rgba(255, 52, 52, 0.3);
+  border-radius: var(--radius-md);
+  font-size: 12.5px;
+  color: var(--gold-bright);
+}
+
+.admin-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Button Base Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+/* Primary Red Glowing Button */
+.btn-red {
+  background: linear-gradient(135deg, #FF3434 0%, #b81c1c 100%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 18px -4px rgba(255, 52, 52, 0.6);
+}
+
+.btn-red:hover {
+  background: linear-gradient(135deg, #ff4d4d 0%, #c92323 100%);
+  box-shadow: 0 6px 24px -2px rgba(255, 52, 52, 0.8);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Gold Button */
+.btn-gold {
+  background: linear-gradient(135deg, #FFE58A 0%, #FFD34D 100%);
+  color: var(--text-dark);
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 16px -4px rgba(255, 211, 77, 0.5);
+}
+
+.btn-gold:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 6px 22px -2px rgba(255, 211, 77, 0.7);
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: var(--radius-sm);
+}
+
+.btn-outline-danger {
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.08);
+  color: #ff9e99;
+}
+
+.btn-outline-danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.7);
+}
+
+/* Admin Toggle Button */
+.btn-admin-toggle {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border);
+}
+
+.btn-admin-toggle.admin-active {
+  background: linear-gradient(135deg, rgba(255, 52, 52, 0.22), rgba(255, 211, 77, 0.15));
+  border-color: var(--red);
+  color: var(--gold-bright);
+  box-shadow: 0 0 14px rgba(255, 52, 52, 0.35);
+}
+
+/* ==========================================================================
+   GROUP TABS SWITCHER
+   ========================================================================== */
+.group-tabs-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.group-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text-dim);
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.group-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.group-tab-btn.active {
+  background: linear-gradient(135deg, rgba(255, 52, 52, 0.25), rgba(255, 211, 77, 0.12));
+  border-color: var(--red);
+  color: var(--gold-bright);
+  box-shadow: 0 4px 16px -4px rgba(255, 52, 52, 0.5);
+}
+
+.group-tab-count {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-dim);
+}
+
+.group-tab-btn.active .group-tab-count {
+  background: var(--red);
+  color: #ffffff;
+}
+
+.group-tab-btn.add-group-btn {
+  border-style: dashed;
+  color: var(--gold);
+}
+
+.group-tab-btn.add-group-btn:hover {
+  border-color: var(--gold);
+  background: rgba(255, 211, 77, 0.08);
+}
+
+/* ==========================================================================
+   MAIN DASHBOARD GRID LAYOUT (LEADERBOARD + RIGHT-SIDE CONTROL PANEL)
+   ========================================================================== */
+.main-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 22px;
+  align-items: start;
+}
+
+@media (max-width: 1180px) {
+  .main-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* App Footer */
+.app-footer {
+  margin-top: 40px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-faint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.app-footer a {
+  color: var(--gold);
+  text-decoration: none;
+}
+
+.app-footer a:hover {
+  text-decoration: underline;
+}

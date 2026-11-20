@@ -1,0 +1,6 @@
+preview*.png
+node_modules/
+tournament_db.json
+*.log
+.DS_Store
+

@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WARZONE OFFICIAL — Esports Tournament Standings Manager</title>
+  <link rel="icon" type="image/png" href="assets/warzone-logo.png">
+
+  <!-- Fonts & CDN Dependencies -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <!-- Modular Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/leaderboard.css">
+  <link rel="stylesheet" href="css/panels.css">
+  <link rel="stylesheet" href="css/modals.css">
+</head>
+<body>
+
+  <!-- Background Cosmic FX: Nebula drift and twinkling star particles -->
+  <div class="bg-cosmic-fx" aria-hidden="true">
+    <div class="nebula-glow"></div>
+    <div class="stars" id="starsLayer1"></div>
+    <div class="stars2" id="starsLayer2"></div>
+    <div class="vignette-overlay"></div>
+  </div>
+
+  <div class="app-container">
+    
+    <!-- Top Navigation Bar -->
+    <header class="top-navbar">
+      <div class="nav-brand">
+        <div class="nav-logo-box">
+          <img src="assets/warzone-logo.png" alt="Logo" onerror="this.style.display='none'">
+        </div>
+        <div class="nav-titles">
+          <div class="nav-brand-title">WARZONE <span>OFFICIAL</span></div>
+          <div class="nav-subtitle">Esports Tournament Standings Manager</div>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <!-- Admin Mode Toggle -->
+        <button class="btn btn-admin-toggle" id="adminModeToggleBtn" title="Toggle Admin Mode">
+          <span id="adminToggleIcon">🔒</span>
+          <span id="adminToggleText">Viewer Mode</span>
+        </button>
+
+        <!-- Dark/Light Mode -->
+        <button class="btn" id="themeModeToggle" title="Toggle Dark/Light Mode">
+          <span id="themeModeIcon">🌙</span>
+        </button>
+
+        <!-- Share Button -->
+        <button class="btn" id="topbarShareBtn" title="Share Leaderboard">
+          <span>🔗</span> Share
+        </button>
+
+        <!-- Fullscreen Option -->
+        <button class="btn" id="topbarFullscreenBtn" title="Broadcast Fullscreen Mode">
+          <span>⛶</span> Fullscreen
+        </button>
+
+        <!-- Settings Button -->
+        <button class="btn" id="openSettingsBtn" title="Open Settings & Customizer">
+          <span>⚙</span> Settings
+        </button>
+
+        <!-- High-Res PNG Download (Glowing Red Button) -->
+        <button class="btn btn-red" id="topbarDownloadPngBtn" title="Download High-Resolution PNG Standings Graphic">
+          <span>📥</span> Download PNG
+        </button>
+      </div>
+    </header>
+
+    <!-- Admin Notification Banner -->
+    <div class="admin-notice-banner" id="adminNoticeBanner" style="display: none;">
+      <div class="admin-banner-left">
+        <span>🔓</span>
+        <b>ADMIN MODE ACTIVE:</b> You can edit scores, roster names, match results, drag-and-drop ranks, and customize tournament branding.
+      </div>
+      <button class="btn btn-sm btn-outline-danger" onclick="window.adminManager.lockAdmin()">Lock Session</button>
+    </div>
+
+    <!-- Group Management Tabs Switcher -->
+    <nav class="group-tabs-container" id="groupSwitch">
+      <!-- Injected by js/groups.js: GROUP A, GROUP B, GROUP C, GROUP D, + ADD GROUP -->
+    </nav>
+
+    <!-- Main Dashboard Grid Layout -->
+    <main class="main-dashboard-grid">
+      
+      <!-- ================= LEFT COLUMN: MAIN LEADERBOARD ================= -->
+      <section class="leaderboard-wrapper">
+        
+        <!-- Toolbar above Leaderboard -->
+        <div class="leaderboard-toolbar">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="teamSearchInput" placeholder="Search squads in this group..." spellcheck="false">
+          </div>
+
+          <div class="toolbar-toggles">
+            <label class="toggle-switch-label" title="Automatically sort squads by tournament points">
+              <input type="checkbox" id="autoRankToggle" checked>
+              <span>Auto-Ranking</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- ================= OFFICIAL CAPTURE AREA (PNG EXPORT ELEMENT) ================= -->
+        <div id="captureArea">
+          
+          <!-- Official Scrim Header -->
+          <header class="leaderboard-header">
+            <div class="header-logo-row">
+              <div class="header-logo-slot" id="logoSlot" title="Click to change logo">
+                <img id="tournamentLogoImg" src="assets/warzone-logo.png" alt="Logo">
+                <span class="logo-mono" id="logoMono" style="display:none;">WZ</span>
+              </div>
+              <div class="header-org-name editable-field" id="fldOrgName" data-field="websiteName">WARZONE OFFICIAL</div>
+            </div>
+
+            <h1 class="header-tournament-title editable-field" id="fldTournamentName" data-field="tournamentName">DAILY PAID SCRIM</h1>
+            <div class="header-subtitle editable-field" id="fldSubtitle" data-field="tournamentSubtitle">OVERALL STANDINGS</div>
+            <div class="header-match-info editable-field" id="fldMatchInfo" data-field="matchInfoLine">WEEK 01 DAY 01</div>
+            
+            <div class="header-group-pill" id="groupPillDisplay">GROUP A</div>
+          </header>
+
+          <!-- Leaderboard Table -->
+          <div class="standings-table-container">
+            <!-- Column Headers -->
+            <div class="table-col-header">
+              <div class="th-rank">#</div>
+              <div class="th-name">TEAM NAME</div>
+              <div class="th-stat">M.P</div>
+              <div class="th-stat">WIN</div>
+              <div class="th-stat-pts">POS PTS</div>
+              <div class="th-stat-pts">KILL PTS</div>
+              <div class="th-total">TOTAL</div>
+            </div>
+
+            <!-- Squad Rows (Dynamically Rendered by js/leaderboard.js) -->
+            <div class="team-rows-list" id="teamRows">
+              <!-- Rendered rows -->
+            </div>
+          </div>
+
+          <!-- Official Leaderboard Footer -->
+          <footer class="leaderboard-footer">
+            <span class="editable-field" id="fldFooter" data-field="footerText">Powered by WARZONE OFFICIAL</span>
+            <span id="footMeta">12 Squads · Auto-Ranked</span>
+          </footer>
+
+        </div>
+        <!-- ================= END CAPTURE AREA ================= -->
+
+      </section>
+
+      <!-- ================= RIGHT COLUMN: SIDEBAR CONTROLS ================= -->
+      <aside class="sidebar-controls">
+        
+        <!-- CARD 1: QUICK POINT UPDATE PANEL -->
+        <div class="panel-card featured-card" id="quickUpdateCard">
+          <div class="panel-head">
+            <h2 class="panel-title"><span class="icon">⚡</span> Quick Point Update</h2>
+            <span class="panel-badge">Match Entry</span>
+          </div>
+
+          <div class="panel-body">
+            <form class="form-grid" id="quickUpdateForm" onsubmit="return false;">
+              
+              <!-- Select Group -->
+              <div class="form-row">
+                <label class="form-label" for="quickGroupSelect">Tournament Group</label>
+                <select class="form-control" id="quickGroupSelect">
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+
+              <!-- Select Squad -->
+              <div class="form-row">
+                <label class="form-label" for="quickTeamSelect">
+                  Select Squad
+                  <span class="helper">Choose team to score</span>
+                </label>
+                <select class="form-control" id="quickTeamSelect">
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+
+              <!-- Match Number & Finish Position Duo -->
+              <div class="form-row-duo">
+                <div class="form-row">
+                  <label class="form-label" for="quickMatchNumber">Match #</label>
+                  <input type="number" class="form-control" id="quickMatchNumber" value="1" min="1" max="99">
+                </div>
+
+                <div class="form-row">
+                  <label class="form-label" for="quickPositionSelect">Position</label>
+                  <select class="form-control" id="quickPositionSelect">
+                    <!-- Populated dynamically with points -->
+                  </select>
+                </div>
+              </div>
+
+              <!-- Position Points & Kill Points Duo -->
+              <div class="form-row-duo">
+                <div class="form-row">
+                  <label class="form-label" for="quickPositionPoints">
+                    Position Pts
+                    <span class="helper" style="color:var(--gold);">Auto-filled</span>
+                  </label>
+                  <input type="number" class="form-control" id="quickPositionPoints" placeholder="0" min="0" step="any">
+                </div>
+
+                <div class="form-row">
+                  <label class="form-label" for="quickKillPoints">
+                    Kill Points (Kills)
+                    <span class="helper" style="color:var(--red);">1 pt / kill</span>
+                  </label>
+                  <input type="number" class="form-control" id="quickKillPoints" placeholder="0" min="0">
+                </div>
+              </div>
+
+              <!-- Win / Booyah Checkbox -->
+              <label class="form-checkbox-label" for="quickWinCheck">
+                <input type="checkbox" id="quickWinCheck">
+                <span>🏆 Winner / Booyah (WWCD)</span>
+              </label>
+
+              <!-- Action Buttons -->
+              <div class="form-actions">
+                <button type="button" class="btn btn-red btn-big-save" id="quickSaveMatchBtn">
+                  <span>💾</span> SAVE MATCH RESULT
+                </button>
+
+                <div class="form-secondary-actions">
+                  <button type="button" class="btn" id="quickResetFormBtn">
+                    <span>↺</span> Reset Form
+                  </button>
+                  <button type="button" class="btn" id="quickUndoBtn" title="Undo the latest point update (Ctrl+Z)">
+                    <span>↩</span> Undo Last
+                  </button>
+                </div>
+              </div>
+
+            </form>
+          </div>
+        </div>
+
+        <!-- CARD 2: MATCH HISTORY & AUDIT LOG -->
+        <div class="panel-card" id="matchHistoryCard">
+          <div class="panel-head">
+            <h2 class="panel-title"><span class="icon">🕒</span> Match History</h2>
+            <span class="panel-badge" id="histCountBadge">0 records</span>
+          </div>
+
+          <div class="panel-body">
+            <!-- Filter Options -->
+            <div class="history-filters">
+              <select class="form-control" id="historyTeamFilter">
+                <option value="">All Squads</option>
+              </select>
+              <select class="form-control" id="historyMatchFilter">
+                <option value="">All Matches</option>
+              </select>
+            </div>
+
+            <!-- Toolbar buttons -->
+            <div class="history-toolbar-actions">
+              <button class="btn btn-sm" id="undoLatestHistBtn">↩ Undo Latest</button>
+              <button class="btn btn-sm btn-outline-danger" id="clearHistoryBtn">🗑 Clear</button>
+            </div>
+
+            <!-- History Scroll List -->
+            <div class="history-list-scroll" id="historyList">
+              <!-- Rendered by js/match-history.js -->
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 3: QUICK SHORTCUTS & EXPORTS -->
+        <div class="panel-card">
+          <div class="panel-head">
+            <h2 class="panel-title"><span class="icon">🛠</span> Quick Actions</h2>
+          </div>
+          <div class="panel-body">
+            <div class="quick-shortcuts-grid">
+              <button class="btn btn-sm" onclick="window.settingsManager.openTab('squads'); window.settingsManager.open();">
+                <span>➕</span> Add Squad
+              </button>
+              <button class="btn btn-sm" onclick="window.exportManager.exportCSV()">
+                <span>📊</span> Export CSV
+              </button>
+              <button class="btn btn-sm" onclick="window.exportManager.exportPDF()">
+                <span>📄</span> Export PDF
+              </button>
+              <button class="btn btn-sm" onclick="window.exportManager.exportJSON()">
+                <span>💾</span> Backup JSON
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <span>WARZONE OFFICIAL Tournament Standings Manager</span>
+      <span>•</span>
+      <span>Fully Persistent Local Database</span>
+      <span>•</span>
+      <a href="javascript:void(0)" onclick="window.settingsManager.open()">Settings & Customizer</a>
+    </footer>
+
+  </div>
+
+  <!-- ==========================================================================
+       MODALS & DRAWERS
+       ========================================================================== -->
+
+  <!-- 1. SETTINGS & CUSTOMIZATION DRAWER -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <aside class="settings-drawer" id="settingsDrawer">
+    <div class="drawer-head">
+      <h2>⚙ Tournament Settings</h2>
+      <button class="modal-close-btn" id="closeSettingsBtn">✕</button>
+    </div>
+
+    <!-- Settings Tabs Bar -->
+    <nav class="settings-tabs-bar">
+      <button class="settings-tab-btn active" data-tab="tournament">Branding</button>
+      <button class="settings-tab-btn" data-tab="squads">Squad Roster</button>
+      <button class="settings-tab-btn" data-tab="groups">Groups</button>
+      <button class="settings-tab-btn" data-tab="scoring">Scoring</button>
+      <button class="settings-tab-btn" data-tab="theme">Theme & Design</button>
+      <button class="settings-tab-btn" data-tab="security">Security</button>
+      <button class="settings-tab-btn" data-tab="data">Data & Backup</button>
+    </nav>
+
+    <!-- Settings Content Panels -->
+    <div class="settings-content">
+      
+      <!-- TAB 1: TOURNAMENT BRANDING -->
+      <div class="settings-panel active" data-panel="tournament">
+        <div class="section-title">Tournament Branding & Details</div>
+        <div class="section-desc">Customize header titles, organization branding, and logos.</div>
+
+        <div class="form-grid">
+          <div class="form-row">
+            <label class="form-label">Brand / Organization Name</label>
+            <input type="text" class="form-control" id="setOrgName">
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">Main Tournament Title</label>
+            <input type="text" class="form-control" id="setTournName">
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">Standings Subtitle</label>
+            <input type="text" class="form-control" id="setSubtitle">
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">Match Info Line</label>
+            <input type="text" class="form-control" id="setMatchInfo">
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">Footer Powered-By Text</label>
+            <input type="text" class="form-control" id="setFooterText">
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">Upload Tournament Logo</label>
+            <input type="file" class="form-control" id="setTournamentLogoFile" accept="image/*">
+            <div style="margin-top: 6px;">
+              <button type="button" class="btn btn-sm" id="resetLogoBtn">Reset Logo to Default</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: SQUAD ROSTER MANAGEMENT -->
+      <div class="settings-panel" data-panel="squads">
+        <div class="section-title">Squad Roster Management</div>
+        <div class="section-desc">Manage teams in the active group, edit names, upload custom logos, or add new slots.</div>
+
+        <div style="margin-bottom: 12px;">
+          <button class="btn btn-red btn-sm" onclick="window.settingsManager.addSquadSlot()">+ Add New Squad</button>
+        </div>
+
+        <div class="squad-roster-list" id="squadRosterList">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- TAB 3: GROUP MANAGEMENT -->
+      <div class="settings-panel" data-panel="groups">
+        <div class="section-title">Tournament Groups</div>
+        <div class="section-desc">Manage tournament stages and groups (Group A, Group B, Finals, etc.).</div>
+
+        <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+          <button class="btn btn-red btn-sm" onclick="window.groupsManager.openAddGroupModal()">+ Add Group</button>
+          <button class="btn btn-sm" onclick="window.groupsManager.duplicateActiveGroup()">Duplicate Active Group</button>
+        </div>
+
+        <div class="form-row" style="margin-bottom: 14px;">
+          <label class="form-label">Rename Active Group</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" class="form-control" id="renameGroupInput" placeholder="New Group Name">
+            <button class="btn btn-gold btn-sm" onclick="window.groupsManager.renameActiveGroup(document.getElementById('renameGroupInput').value)">Save</button>
+          </div>
+        </div>
+
+        <div id="groupsSettingsList">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- TAB 4: SCORING SYSTEM -->
+      <div class="settings-panel" data-panel="scoring">
+        <div class="section-title">Tournament Scoring Matrix</div>
+        <div class="section-desc">Set points awarded automatically for each finishing position and kill multipliers.</div>
+
+        <div class="form-row" style="margin-bottom: 16px;">
+          <label class="form-label">Kill Point Multiplier</label>
+          <input type="number" class="form-control" id="setKillWeight" value="1" min="0" step="0.5">
+          <span style="font-size: 11px; color: var(--text-dim); margin-top: 4px;">Points awarded for each kill recorded (default: 1).</span>
+        </div>
+
+        <div class="section-title" style="font-size: 16px; margin-bottom: 8px;">Position Points by Rank</div>
+        <div class="scoring-matrix-grid">
+          <div class="matrix-cell"><span class="matrix-label">1st (Booyah)</span><input type="number" id="setPosPts_1" value="12"></div>
+          <div class="matrix-cell"><span class="matrix-label">2nd Place</span><input type="number" id="setPosPts_2" value="9"></div>
+          <div class="matrix-cell"><span class="matrix-label">3rd Place</span><input type="number" id="setPosPts_3" value="8"></div>
+          <div class="matrix-cell"><span class="matrix-label">4th Place</span><input type="number" id="setPosPts_4" value="7"></div>
+          <div class="matrix-cell"><span class="matrix-label">5th Place</span><input type="number" id="setPosPts_5" value="6"></div>
+          <div class="matrix-cell"><span class="matrix-label">6th Place</span><input type="number" id="setPosPts_6" value="5"></div>
+          <div class="matrix-cell"><span class="matrix-label">7th Place</span><input type="number" id="setPosPts_7" value="4"></div>
+          <div class="matrix-cell"><span class="matrix-label">8th Place</span><input type="number" id="setPosPts_8" value="3"></div>
+          <div class="matrix-cell"><span class="matrix-label">9th Place</span><input type="number" id="setPosPts_9" value="2"></div>
+          <div class="matrix-cell"><span class="matrix-label">10th Place</span><input type="number" id="setPosPts_10" value="1"></div>
+          <div class="matrix-cell"><span class="matrix-label">11th Place</span><input type="number" id="setPosPts_11" value="0"></div>
+          <div class="matrix-cell"><span class="matrix-label">12th Place</span><input type="number" id="setPosPts_12" value="0"></div>
+          <div class="matrix-cell"><span class="matrix-label">13th Place</span><input type="number" id="setPosPts_13" value="0"></div>
+          <div class="matrix-cell"><span class="matrix-label">14th Place</span><input type="number" id="setPosPts_14" value="0"></div>
+          <div class="matrix-cell"><span class="matrix-label">15th Place</span><input type="number" id="setPosPts_15" value="0"></div>
+          <div class="matrix-cell"><span class="matrix-label">16th Place</span><input type="number" id="setPosPts_16" value="0"></div>
+        </div>
+      </div>
+
+      <!-- TAB 5: THEME & VISUAL CUSTOMIZATION -->
+      <div class="settings-panel" data-panel="theme">
+        <div class="section-title">Visual Customization & Presets</div>
+        <div class="section-desc">Select an esports theme preset or fine-tune custom colors and glow styling.</div>
+
+        <div class="theme-presets-grid">
+          <div class="theme-preset-card active" data-theme="redEsports">
+            <div class="theme-swatch" style="background: linear-gradient(135deg, #FF3434, #FFD34D);"></div>
+            <div class="theme-card-name">Red Esports</div>
+          </div>
+          <div class="theme-preset-card" data-theme="goldPremium">
+            <div class="theme-swatch" style="background: linear-gradient(135deg, #FFD34D, #D4A017);"></div>
+            <div class="theme-card-name">Gold Premium</div>
+          </div>
+          <div class="theme-preset-card" data-theme="blueGaming">
+            <div class="theme-swatch" style="background: linear-gradient(135deg, #00c6ff, #0072ff);"></div>
+            <div class="theme-card-name">Blue Gaming</div>
+          </div>
+          <div class="theme-preset-card" data-theme="purpleNeon">
+            <div class="theme-swatch" style="background: linear-gradient(135deg, #c084fc, #7e22ce);"></div>
+            <div class="theme-card-name">Purple Neon</div>
+          </div>
+        </div>
+
+        <div class="section-title" style="font-size: 16px; margin-bottom: 8px;">Custom Palette Overrides</div>
+        <div class="color-picker-grid">
+          <div class="form-row">
+            <label class="form-label">Primary Accent (Red)</label>
+            <div class="color-input-wrap">
+              <input type="color" id="themePrimaryColor" value="#FF3434">
+              <span>Primary</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">Secondary Accent (Gold)</label>
+            <div class="color-input-wrap">
+              <input type="color" id="themeSecondaryColor" value="#FFD34D">
+              <span>Secondary</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">Background Void</label>
+            <div class="color-input-wrap">
+              <input type="color" id="themeBgColor" value="#0a0a0c">
+              <span>Void Color</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">Glass Cards</label>
+            <div class="color-input-wrap">
+              <input type="color" id="themeCardBg" value="#121216">
+              <span>Card Tint</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 6: ADMIN SECURITY -->
+      <div class="settings-panel" data-panel="security">
+        <div class="section-title">Admin Access & Security</div>
+        <div class="section-desc">Manage admin password protection to secure your tournament scores.</div>
+
+        <div class="form-grid">
+          <div class="form-row">
+            <label class="form-label">Current Admin Password</label>
+            <input type="password" class="form-control" id="curAdminPassInput" placeholder="Default is admin123">
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">New Password</label>
+            <input type="password" class="form-control" id="newAdminPassInput" placeholder="Enter new password">
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">Confirm New Password</label>
+            <input type="password" class="form-control" id="confirmNewAdminPassInput" placeholder="Confirm new password">
+          </div>
+
+          <div style="margin-top: 6px;">
+            <button type="button" class="btn btn-gold btn-sm" id="saveNewAdminPassBtn">Update Admin Password</button>
+          </div>
+
+          <hr style="border: 0; border-top: 1px solid var(--border); margin: 12px 0;">
+
+          <div>
+            <button type="button" class="btn btn-outline-danger btn-sm" id="lockAdminSessionBtn">Lock Admin Session Now</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 7: DATA & BACKUP -->
+      <div class="settings-panel" data-panel="data">
+        <div class="section-title">Database, Backup & Restore</div>
+        <div class="section-desc">Export complete tournament data to JSON, import backups, or reset points.</div>
+
+        <div class="form-grid">
+          <div class="form-row">
+            <label class="form-label">Backup Tournament</label>
+            <button type="button" class="btn btn-sm" id="exportJsonDataBtn">📥 Export Tournament JSON Backup</button>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">Restore Tournament</label>
+            <input type="file" class="form-control" id="importJsonFileInput" accept=".json">
+          </div>
+
+          <hr style="border: 0; border-top: 1px solid var(--border); margin: 10px 0;">
+
+          <div class="form-row">
+            <label class="form-label">Reset Options</label>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-outline-danger btn-sm" id="resetGroupPointsBtn">Reset Active Group Points</button>
+              <button type="button" class="btn btn-outline-danger btn-sm" id="resetAllTournamentBtn">Factory Reset All Data</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- 2. ADMIN PASSWORD MODAL -->
+  <div class="modal-overlay" id="adminPasswordModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><span>🔒</span> Enter Admin Password</h3>
+        <button class="modal-close-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom: 14px; font-size: 13px; color: var(--text-dim);">
+          Admin authentication is required to manage scores, settings, and tournament data.<br>
+          <span style="color:var(--gold-bright); font-size: 11.5px;">Default password: <b>admin123</b></span>
+        </div>
+        <div class="form-row">
+          <label class="form-label" for="adminPasswordInput">Password</label>
+          <input type="password" class="form-control" id="adminPasswordInput" placeholder="Enter admin password">
+          <div id="adminPassError" style="color:var(--danger); font-size:12px; margin-top:6px; display:none;"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-sm modal-close-btn">Cancel</button>
+        <button class="btn btn-red btn-sm" id="submitAdminPassBtn">Unlock Admin</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. ADD GROUP MODAL -->
+  <div class="modal-overlay" id="addGroupModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><span>➕</span> Create New Group</h3>
+        <button class="modal-close-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-row">
+            <label class="form-label" for="newGroupNameInput">Group Name</label>
+            <input type="text" class="form-control" id="newGroupNameInput" placeholder="e.g. GROUP E or GRAND FINALS">
+          </div>
+          <label class="form-checkbox-label" for="copyRosterCheck">
+            <input type="checkbox" id="copyRosterCheck" checked>
+            <span>Copy squad names from current group (reset points to 0)</span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-sm modal-close-btn">Cancel</button>
+        <button class="btn btn-red btn-sm" id="confirmAddGroupBtn">Create Group</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. EDIT MATCH HISTORY RECORD MODAL -->
+  <div class="modal-overlay" id="editHistoryModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><span>✎</span> Edit Match Result</h3>
+        <button class="modal-close-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 12px;" id="editRecSquadName">
+          Squad Name
+        </div>
+        <div class="form-grid">
+          <div class="form-row-duo">
+            <div class="form-row">
+              <label class="form-label">Match #</label>
+              <input type="number" class="form-control" id="editRecMatchNo" min="1">
+            </div>
+            <div class="form-row">
+              <label class="form-label">Position</label>
+              <input type="number" class="form-control" id="editRecPosition" min="1" max="16">
+            </div>
+          </div>
+          <div class="form-row-duo">
+            <div class="form-row">
+              <label class="form-label">Position Points</label>
+              <input type="number" class="form-control" id="editRecPosPts" min="0" step="any">
+            </div>
+            <div class="form-row">
+              <label class="form-label">Kills</label>
+              <input type="number" class="form-control" id="editRecKills" min="0">
+            </div>
+          </div>
+          <label class="form-checkbox-label">
+            <input type="checkbox" id="editRecWin">
+            <span>🏆 Count as Win / Booyah</span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-sm modal-close-btn">Cancel</button>
+        <button class="btn btn-red btn-sm" id="saveEditHistoryBtn">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. SHARE MODAL -->
+  <div class="modal-overlay" id="shareModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><span>🔗</span> Share Leaderboard</h3>
+        <button class="modal-close-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-row">
+            <label class="form-label">Public Standings Link</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" class="form-control" id="sharePublicLinkInput" readonly>
+              <button class="btn btn-gold btn-sm" onclick="window.exportManager.copyShareLink()">Copy</button>
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Embed Widget (IFrame)</label>
+            <div style="display: flex; gap: 8px;">
+              <textarea class="form-control" id="shareEmbedCodeInput" rows="3" readonly></textarea>
+              <button class="btn btn-gold btn-sm" style="align-self: flex-start;" onclick="window.exportManager.copyEmbedCode()">Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-sm modal-close-btn">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. CONFIRMATION DIALOG MODAL -->
+  <div class="modal-overlay" id="confirmDialogModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="confirmModalTitle">Confirm Action</h3>
+        <button class="modal-close-btn" id="confirmModalCancelBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="confirmModalMessage" style="font-size: 13.5px; line-height: 1.5; color: var(--text-main);">
+          Are you sure you want to proceed?
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-sm" id="confirmModalCancelBtn">Cancel</button>
+        <button class="btn btn-red btn-sm" id="confirmModalOkBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Application Modular Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/leaderboard.js"></script>
+  <script src="js/quick-update.js"></script>
+  <script src="js/match-history.js"></script>
+  <script src="js/groups.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
