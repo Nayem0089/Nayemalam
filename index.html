@@ -316,21 +316,47 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      color: var(--coral-red);
+      color: #4ade80;
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
       font-family: var(--font-stats);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       letter-spacing: 1px;
       text-transform: uppercase;
+      transition: all 0.2s ease;
     }
 
     .live-dot {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
-      background: var(--coral-red);
-      box-shadow: 0 0 10px var(--coral-red);
+      background: #22c55e;
+      box-shadow: 0 0 8px #22c55e;
       animation: pulse-dot 1.5s infinite;
+    }
+
+    .live-indicator.live-syncing {
+      color: #facc15;
+      background: rgba(234, 179, 8, 0.1);
+      border-color: rgba(234, 179, 8, 0.3);
+    }
+    .live-indicator.live-syncing .live-dot {
+      background: #eab308;
+      box-shadow: 0 0 8px #eab308;
+    }
+
+    .live-indicator.live-offline {
+      color: var(--text-dim);
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--card-border);
+    }
+    .live-indicator.live-offline .live-dot {
+      background: var(--text-dim);
+      box-shadow: none;
+      animation: none;
     }
 
     @keyframes pulse-dot {
@@ -1483,11 +1509,15 @@
           </div>
 
           <div class="toolbar-actions">
-            <span class="live-indicator"><span class="live-dot"></span> LIVE STANDINGS</span>
+            <span class="live-indicator" id="liveSyncStatus"><span class="live-dot pulse"></span> LIVE STANDINGS</span>
             <span class="stadium-pill" id="teamCountBadge">12 Squads Registered</span>
-            <!-- Add Squad Button (Visible in Edit Mode or via Toolbar) -->
+            <!-- Add Squad Button (Visible in Edit Mode) -->
             <button class="btn btn-sm btn-coral" id="addNewSquadBtn" style="display: none;">
               <span>➕</span> Add Squad
+            </button>
+            <!-- Reset All Points to 0 Button (Visible in Edit Mode) -->
+            <button class="btn btn-sm" id="resetPointsToZeroBtn" style="display: none; border-color: rgba(239, 68, 68, 0.4); color: #f87171;" title="Reset all squad points to 0 for a new tournament" onclick="UI.resetAllPointsToZero()">
+              <span>⚡</span> Reset Points to 0
             </button>
             <button class="btn btn-sm" id="sortRankingBtn" title="Recalculate and sort leaderboard">
               <span>⚡</span> Auto-Rank
@@ -2009,18 +2039,18 @@
     };
 
     const DEFAULT_SQUADS = [
-      { id: 'sq_1',  name: 'OutLaw',           logo: 'OL',  matches: 6, wins: 2, posPts: 50, killPts: 120, total: 170, roster: ['OutLaw_King', 'OutLaw_Viper', 'OutLaw_Zeus', 'OutLaw_Ghost'] },
-      { id: 'sq_2',  name: 'ZERO GRAVITY xNS', logo: 'ZG',  matches: 5, wins: 2, posPts: 37, killPts: 73,  total: 110, roster: ['ZG_Ragnar', 'ZG_Kage', 'ZG_Nova', 'ZG_Venom'] },
-      { id: 'sq_3',  name: 'FLAWLESS',         logo: 'FLW', matches: 6, wins: 1, posPts: 46, killPts: 57,  total: 103, roster: ['FLW_Ace', 'FLW_Demon', 'FLW_Sniper', 'FLW_Reaper'] },
-      { id: 'sq_4',  name: 'VEXARCH',          logo: 'VEX', matches: 6, wins: 0, posPts: 37, killPts: 31,  total: 68,  roster: ['VEX_Alpha', 'VEX_Ronin', 'VEX_Blaze', 'VEX_Storm'] },
-      { id: 'sq_5',  name: 'WARBORN OFFICIAL', logo: 'WB',  matches: 6, wins: 1, posPts: 33, killPts: 31,  total: 64,  roster: ['WB_Warlord', 'WB_Striker', 'WB_Titan', 'WB_Echo'] },
-      { id: 'sq_6',  name: 'MYSTIC WOLVES',    logo: 'MW',  matches: 6, wins: 1, posPts: 26, killPts: 37,  total: 63,  roster: ['MW_Wolfy', 'MW_Claw', 'MW_Fang', 'MW_Howler'] },
-      { id: 'sq_7',  name: 'ESS 11',           logo: 'ESS', matches: 6, wins: 0, posPts: 25, killPts: 32,  total: 57,  roster: ['ESS_Eleven', 'ESS_Matrix', 'ESS_Chaos', 'ESS_Frost'] },
-      { id: 'sq_8',  name: 'DIVINE CORPSE',    logo: 'DC',  matches: 6, wins: 0, posPts: 25, killPts: 31,  total: 56,  roster: ['DC_Immortal', 'DC_Revenant', 'DC_Phantom', 'DC_Specter'] },
-      { id: 'sq_9',  name: 'UNO REVERSE',      logo: 'UNO', matches: 5, wins: 0, posPts: 16, killPts: 29,  total: 45,  roster: ['UNO_Card', 'UNO_Wild', 'UNO_Skip', 'UNO_Draw4'] },
-      { id: 'sq_10', name: 'CHOSEN ONES',      logo: 'CO',  matches: 6, wins: 0, posPts: 17, killPts: 20,  total: 37,  roster: ['CO_Neo', 'CO_Morpheus', 'CO_Trinity', 'CO_Oracle'] },
-      { id: 'sq_11', name: 'NO SKILL',         logo: 'NS',  matches: 6, wins: 0, posPts: 23, killPts: 13,  total: 36,  roster: ['NS_Lucky', 'NS_NoobMaster', 'NS_Clutch', 'NS_RNG'] },
-      { id: 'sq_12', name: 'ZERO LIMIT',       logo: 'ZL',  matches: 3, wins: 0, posPts: 8,  killPts: 3,   total: 11,  roster: ['ZL_Infinity', 'ZL_Apex', 'ZL_Surge', 'ZL_Pulse'] }
+      { id: 'sq_1',  name: 'OutLaw',           logo: 'OL',  matches: 0, wins: 0, posPts: 0, killPts: 0, total: 0, roster: ['OutLaw_King', 'OutLaw_Viper', 'OutLaw_Zeus', 'OutLaw_Ghost'] },
+      { id: 'sq_2',  name: 'ZERO GRAVITY xNS', logo: 'ZG',  matches: 0, wins: 0, posPts: 0, killPts: 0, total: 0, roster: ['ZG_Ragnar', 'ZG_Kage', 'ZG_Nova', 'ZG_Venom'] },
+      { id: 'sq_3',  name: 'FLAWLESS',         logo: 'FLW', matches: 0, wins: 0, posPts: 0, killPts: 0, total: 0, roster: ['FLW_Ace', 'FLW_Demon', 'FLW_Sniper', 'FLW_Reaper'] },
+      { id: 'sq_4',  name: 'VEXARCH',          logo: 'VEX', matches: 0, wins: 0, posPts: 0, killPts: 0, total: 0, roster: ['VEX_Alpha', 'VEX_Ronin', 'VEX_Blaze', 'VEX_Storm'] },
+      { id: 'sq_5',  name: 'WARBORN OFFICIAL', logo: 'WB',  matches: 0, wins: 0, posPts: 0, killPts: 0, total: 0, roster: ['WB_Warlord', 'WB_Striker', 'WB_Titan', 'WB_Echo'] },
+      { id: 'sq_6',  name: 'MYSTIC WOLVES',    logo: 'MW',  matches: 0, wins: 0, posPts: 0, killPts: 0, total: 0, roster: ['MW_Wolfy', 'MW_Claw', 'MW_Fang', 'MW_Howler'] },
+      { id: 'sq_7',  name: 'ESS 11',           logo: 'ESS', matches: 0, wins: 0, posPts: 0, killPts: 0, total: 0, roster: ['ESS_Eleven', 'ESS_Matrix', 'ESS_Chaos', 'ESS_Frost'] },
+      { id: 'sq_8',  name: 'DIVINE CORPSE',    logo: 'DC',  matches: 0, wins: 0, posPts: 0, killPts: 0, total: 0, roster: ['DC_Immortal', 'DC_Revenant', 'DC_Phantom', 'DC_Specter'] },
+      { id: 'sq_9',  name: 'UNO REVERSE',      logo: 'UNO', matches: 0, wins: 0, posPts: 0, killPts: 0, total: 0, roster: ['UNO_Card', 'UNO_Wild', 'UNO_Skip', 'UNO_Draw4'] },
+      { id: 'sq_10', name: 'CHOSEN ONES',      logo: 'CO',  matches: 0, wins: 0, posPts: 0, killPts: 0, total: 0, roster: ['CO_Neo', 'CO_Morpheus', 'CO_Trinity', 'CO_Oracle'] },
+      { id: 'sq_11', name: 'NO SKILL',         logo: 'NS',  matches: 0, wins: 0, posPts: 0, killPts: 0, total: 0, roster: ['NS_Lucky', 'NS_NoobMaster', 'NS_Clutch', 'NS_RNG'] },
+      { id: 'sq_12', name: 'ZERO LIMIT',       logo: 'ZL',  matches: 0, wins: 0, posPts: 0, killPts: 0, total: 0, roster: ['ZL_Infinity', 'ZL_Apex', 'ZL_Surge', 'ZL_Pulse'] }
     ];
 
     const DEFAULT_APP_STATE = {
@@ -2035,10 +2065,7 @@
       },
       scoring: DEFAULT_POINT_MATRIX,
       squads: DEFAULT_SQUADS,
-      matchHistory: [
-        { id: 'mh_1', matchNo: 1, teamId: 'sq_1', teamName: 'OutLaw', pos: 1, posPts: 12, killPts: 20, total: 32, isWin: true, time: 'Match 1' },
-        { id: 'mh_2', matchNo: 1, teamId: 'sq_2', teamName: 'ZERO GRAVITY xNS', pos: 2, posPts: 9, killPts: 15, total: 24, isWin: false, time: 'Match 1' }
-      ],
+      matchHistory: [],
       ui: {
         editMode: false,
         showRosters: false,
@@ -2046,26 +2073,26 @@
       }
     };
 
-    // --- APPLICATION STATE MANAGER ---
+    // --- APPLICATION STATE MANAGER (CENTRAL LIVE SYNC + LOCALSTORAGE) ---
     const AppState = {
       data: null,
       isAdminAuthenticated: false,
       storageKey: 'warzone_standings_db_v5',
+      serverVersion: 0,
+      isSyncing: false,
 
       init() {
         try {
           const saved = localStorage.getItem(this.storageKey);
           if (saved) {
             this.data = JSON.parse(saved);
-            if (!this.data.squads || !this.data.tournament) {
-              this.resetToDefaults();
-            }
-          } else {
-            this.resetToDefaults();
           }
         } catch (e) {
           console.warn('Storage read error, using defaults:', e);
-          this.resetToDefaults();
+        }
+
+        if (!this.data || !this.data.squads || !this.data.tournament) {
+          this.data = JSON.parse(JSON.stringify(DEFAULT_APP_STATE));
         }
 
         // Migrate from old multi-group format if present
@@ -2089,14 +2116,142 @@
         // Fresh session starts locked
         this.isAdminAuthenticated = false;
         if (this.data.ui) this.data.ui.editMode = false;
+
+        // Fetch central live data from server & start real-time sync stream
+        this.fetchFromServer();
+        this.initLiveSync();
       },
 
-      save() {
+      async fetchFromServer() {
+        try {
+          const res = await fetch('/api/standings', { cache: 'no-store' });
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && json.data) {
+              this.data = json.data;
+              this.serverVersion = json.version || Date.now();
+              this.saveLocalOnly();
+              if (window.UI) {
+                UI.renderAll();
+                UI.updateLiveSyncIndicator(true);
+              }
+              return true;
+            }
+          }
+        } catch (err) {
+          console.warn('Could not reach backend /api/standings, using local cache:', err.message);
+        }
+        return false;
+      },
+
+      save(skipServerPush = false) {
+        this.saveLocalOnly();
+        if (!skipServerPush) {
+          this.pushToServer();
+        }
+      },
+
+      saveLocalOnly() {
         try {
           localStorage.setItem(this.storageKey, JSON.stringify(this.data));
         } catch (e) {
           console.error('Failed to save to localStorage:', e);
         }
+      },
+
+      async pushToServer() {
+        if (this.isSyncing) return;
+        this.isSyncing = true;
+        if (window.UI) UI.updateLiveSyncIndicator('syncing');
+
+        try {
+          const res = await fetch('/api/standings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              data: this.data,
+              adminPassword: this.data.adminPassword || 'admin123'
+            })
+          });
+
+          if (res.ok) {
+            const json = await res.json();
+            if (json.version) {
+              this.serverVersion = json.version;
+            }
+            if (window.UI) UI.updateLiveSyncIndicator(true);
+          } else {
+            if (window.UI) UI.updateLiveSyncIndicator(false);
+          }
+        } catch (err) {
+          console.warn('Failed to push standings to server:', err);
+          if (window.UI) UI.updateLiveSyncIndicator(false);
+        } finally {
+          this.isSyncing = false;
+        }
+      },
+
+      initLiveSync() {
+        // Real-Time Server-Sent Events (SSE) Stream
+        if (window.EventSource) {
+          try {
+            const es = new EventSource('/api/standings/live');
+            es.onmessage = (event) => {
+              try {
+                const payload = JSON.parse(event.data);
+                if (payload && payload.data) {
+                  // Only update if newer than our version
+                  if (payload.version && payload.version !== this.serverVersion) {
+                    const activeEl = document.activeElement;
+                    const isTyping = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
+
+                    this.data = payload.data;
+                    this.serverVersion = payload.version;
+                    this.saveLocalOnly();
+
+                    // Don't disturb active editing input
+                    if (!isTyping && window.UI) {
+                      UI.renderAll();
+                    }
+                    if (window.UI) UI.updateLiveSyncIndicator(true);
+                  }
+                }
+              } catch (e) {}
+            };
+            es.onerror = () => {
+              // Browser automatically retries connection
+            };
+          } catch (e) {}
+        }
+
+        // Visibility-aware background polling fallback (every 4 seconds)
+        setInterval(() => {
+          if (!document.hidden && !this.isSyncing) {
+            this.checkServerUpdates();
+          }
+        }, 4000);
+      },
+
+      async checkServerUpdates() {
+        try {
+          const res = await fetch(`/api/standings?version=${this.serverVersion || 0}`, { cache: 'no-store' });
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && json.data && json.version && json.version !== this.serverVersion) {
+              const activeEl = document.activeElement;
+              const isTyping = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
+
+              this.data = json.data;
+              this.serverVersion = json.version;
+              this.saveLocalOnly();
+
+              if (!isTyping && window.UI) {
+                UI.renderAll();
+              }
+              if (window.UI) UI.updateLiveSyncIndicator(true);
+            }
+          }
+        } catch (e) {}
       },
 
       resetToDefaults() {
@@ -2446,18 +2601,60 @@
         const toggleBtn = document.getElementById('editModeToggleBtn');
         const label = document.getElementById('editModeLabel');
         const addBtn = document.getElementById('addNewSquadBtn');
+        const resetPointsBtn = document.getElementById('resetPointsToZeroBtn');
         const thActions = document.getElementById('thActionsCol');
 
         if (isEdit) {
           toggleBtn.classList.add('active');
           label.innerHTML = `<span>🔓</span> Admin Mode: ON`;
-          addBtn.style.display = 'inline-flex';
-          thActions.style.display = 'table-cell';
+          if (addBtn) addBtn.style.display = 'inline-flex';
+          if (resetPointsBtn) resetPointsBtn.style.display = 'inline-flex';
+          if (thActions) thActions.style.display = 'table-cell';
         } else {
           toggleBtn.classList.remove('active');
           label.innerHTML = `<span>🔒</span> Edit Mode: OFF`;
-          addBtn.style.display = 'none';
-          thActions.style.display = 'none';
+          if (addBtn) addBtn.style.display = 'none';
+          if (resetPointsBtn) resetPointsBtn.style.display = 'none';
+          if (thActions) thActions.style.display = 'none';
+        }
+      },
+
+      resetAllPointsToZero() {
+        if (!AppState.isAdminAuthenticated) {
+          this.openAdminAuthModal();
+          return;
+        }
+
+        if (confirm('⚡ Reset ALL squad points to 0 for a fresh match / tournament? (All squads will be set to 0 M.P, 0 WIN, 0 POS PTS, 0 KILL PTS, 0 TOTAL PTS).')) {
+          const squads = AppState.getActiveSquads();
+          squads.forEach(sq => {
+            sq.matches = 0;
+            sq.wins = 0;
+            sq.posPts = 0;
+            sq.killPts = 0;
+            sq.total = 0;
+          });
+
+          AppState.save();
+          SoundFX.save();
+          Toast.show('⚡ All squad points reset to 0 and synced live across all devices!', '⚡');
+          this.renderStandings();
+          this.populateQuickUpdateDropdowns();
+        }
+      },
+
+      updateLiveSyncIndicator(status) {
+        const el = document.getElementById('liveSyncStatus');
+        if (!el) return;
+        if (status === 'syncing') {
+          el.className = 'live-indicator live-syncing';
+          el.innerHTML = '<span class="live-dot"></span> SYNCING...';
+        } else if (status === true) {
+          el.className = 'live-indicator';
+          el.innerHTML = '<span class="live-dot"></span> LIVE STANDINGS';
+        } else {
+          el.className = 'live-indicator live-offline';
+          el.innerHTML = '<span class="live-dot"></span> CACHED';
         }
       },
 

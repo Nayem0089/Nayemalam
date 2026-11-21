@@ -23,6 +23,7 @@ const groupRoutes = require('./routes/group.routes');
 const teamRoutes = require('./routes/team.routes');
 const matchRoutes = require('./routes/match.routes');
 const uploadRoutes = require('./routes/upload.routes');
+const standingsRoutes = require('./routes/standings.routes');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -67,7 +68,10 @@ app.get('/health', async (req, res) => {
 
 app.get('/api/health', (req, res) => res.redirect('/health'));
 
-// 3. API Routes (Rate limited)
+// 3. Central Standings Persistence & Real-time Live Sync (Exempt from strict rate limits)
+app.use('/api/standings', standingsRoutes);
+
+// 4. API Routes (Rate limited)
 app.use('/api', apiLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/tournament', tournamentRoutes);
