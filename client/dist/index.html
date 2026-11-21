@@ -917,6 +917,20 @@
       letter-spacing: 1px;
     }
 
+    /* Clean PNG Export Mode: Guarantee Manage controls & buttons never leak into the image */
+    .exporting-clean-png .th-actions,
+    .exporting-clean-png #thActionsCol,
+    .exporting-clean-png .edit-controls-cell,
+    .exporting-clean-png .action-icon-btn,
+    .exporting-clean-png td:last-child:has(.edit-controls-cell) {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      width: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+    }
+
     /* ==========================================================================
        5. RIGHT COLUMN: SIDEBAR CONTROLS
        ========================================================================== */
@@ -2886,6 +2900,20 @@
         const captureEl = document.getElementById('captureArea');
         if (!captureEl) return;
 
+        // Remember edit mode state so we can restore it after capture
+        const wasEditMode = AppState.data.ui.editMode;
+
+        // Temporarily disable edit mode to switch table to clean broadcast view (removes MANAGE column and inputs)
+        if (wasEditMode) {
+          AppState.data.ui.editMode = false;
+          this.renderStandings();
+        }
+
+        // Force hide Manage column header and apply clean export class
+        const thActions = document.getElementById('thActionsCol');
+        if (thActions) thActions.style.display = 'none';
+        captureEl.classList.add('exporting-clean-png');
+
         // Auto format current live date, year and AM/PM time
         const dt = getAutoDateTime();
         this.updateLiveClock();
@@ -2902,7 +2930,18 @@
           scale: 2.5,
           useCORS: true,
           backgroundColor: '#0b0b0f',
-          logging: false
+          logging: false,
+          ignoreElements: (element) => {
+            if (!element) return false;
+            return (
+              element.id === 'thActionsCol' ||
+              (element.classList && (
+                element.classList.contains('th-actions') ||
+                element.classList.contains('edit-controls-cell') ||
+                element.classList.contains('action-icon-btn')
+              ))
+            );
+          }
         }).then(canvas => {
           const link = document.createElement('a');
           // Automatically includes date, month, year, hours, minutes and AM/PM
@@ -2918,6 +2957,14 @@
           downloadBtn.innerHTML = origText;
           downloadBtn.style.pointerEvents = 'auto';
           alert('Could not render image. Please try again.');
+        }).finally(() => {
+          captureEl.classList.remove('exporting-clean-png');
+          // Restore edit mode if user had it turned on
+          if (wasEditMode) {
+            AppState.data.ui.editMode = true;
+            this.updateEditModeUI();
+            this.renderStandings();
+          }
         });
       },
 
