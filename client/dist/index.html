@@ -475,13 +475,16 @@
       font-weight: 700;
       color: var(--coral-red);
       overflow: hidden;
-      cursor: pointer;
-      position: relative;
-      transition: var(--transition-fast);
       flex-shrink: 0;
+      position: relative;
     }
 
-    .org-logo-slot:hover {
+    .org-logo-slot.admin-editable {
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+
+    .org-logo-slot.admin-editable:hover {
       border-color: var(--coral-red);
       box-shadow: 0 0 14px rgba(255, 77, 77, 0.4);
       transform: scale(1.04);
@@ -506,17 +509,21 @@
       letter-spacing: 2px;
       color: var(--text-white);
       text-transform: uppercase;
+      user-select: none;
+    }
+
+    .org-name-text.admin-editable {
       cursor: pointer;
       transition: color 0.15s ease;
     }
 
-    .org-name-text:hover {
+    .org-name-text.admin-editable:hover {
       color: var(--coral-red);
       text-decoration: underline dotted var(--coral-red);
     }
 
     .header-action-btns {
-      display: inline-flex;
+      display: none; /* Hidden by default for visitors, only shown in Admin Mode */
       align-items: center;
       gap: 6px;
     }
@@ -1531,12 +1538,13 @@
           <!-- Tournament Header -->
           <header class="board-header">
             <div class="board-header-top">
-              <!-- PNG Logo slot - Click to upload or change custom PNG logo anytime -->
-              <div class="org-logo-slot" id="boardOrgLogo" title="Click to upload custom PNG logo" onclick="UI.triggerOrgLogoUpload()">WZ</div>
+              <!-- PNG Logo slot - Click to upload or change custom PNG logo (Admin Only) -->
+              <div class="org-logo-slot" id="boardOrgLogo" onclick="UI.handleOrgLogoClick()">WZ</div>
               
               <div class="org-name-wrap">
-                <div class="org-name-text" id="boardOrgName" title="Click to change brand name" onclick="UI.openBrandModal()">WARZONE</div>
-                <div class="header-action-btns">
+                <div class="org-name-text" id="boardOrgName" onclick="UI.handleOrgNameClick()">WARZONE</div>
+                <!-- Admin Only Action Buttons (Hidden for public viewers) -->
+                <div class="header-action-btns" id="headerAdminActionBtns" style="display: none;">
                   <button type="button" class="header-action-btn" title="Change Brand Name" onclick="UI.openBrandModal()">
                     <span>✏️</span> Edit Name
                   </button>
@@ -2603,6 +2611,9 @@
         const addBtn = document.getElementById('addNewSquadBtn');
         const resetPointsBtn = document.getElementById('resetPointsToZeroBtn');
         const thActions = document.getElementById('thActionsCol');
+        const headerAdminBtns = document.getElementById('headerAdminActionBtns');
+        const boardOrgLogo = document.getElementById('boardOrgLogo');
+        const boardOrgName = document.getElementById('boardOrgName');
 
         if (isEdit) {
           toggleBtn.classList.add('active');
@@ -2610,13 +2621,47 @@
           if (addBtn) addBtn.style.display = 'inline-flex';
           if (resetPointsBtn) resetPointsBtn.style.display = 'inline-flex';
           if (thActions) thActions.style.display = 'table-cell';
+          if (headerAdminBtns) headerAdminBtns.style.display = 'inline-flex';
+          if (boardOrgLogo) {
+            boardOrgLogo.classList.add('admin-editable');
+            boardOrgLogo.title = 'Click to upload custom PNG logo';
+          }
+          if (boardOrgName) {
+            boardOrgName.classList.add('admin-editable');
+            boardOrgName.title = 'Click to change brand name';
+          }
         } else {
           toggleBtn.classList.remove('active');
           label.innerHTML = `<span>🔒</span> Edit Mode: OFF`;
           if (addBtn) addBtn.style.display = 'none';
           if (resetPointsBtn) resetPointsBtn.style.display = 'none';
           if (thActions) thActions.style.display = 'none';
+          if (headerAdminBtns) headerAdminBtns.style.display = 'none';
+          if (boardOrgLogo) {
+            boardOrgLogo.classList.remove('admin-editable');
+            boardOrgLogo.removeAttribute('title');
+          }
+          if (boardOrgName) {
+            boardOrgName.classList.remove('admin-editable');
+            boardOrgName.removeAttribute('title');
+          }
         }
+      },
+
+      handleOrgLogoClick() {
+        if (!AppState.isAdminAuthenticated) {
+          this.openAdminAuthModal();
+          return;
+        }
+        this.triggerOrgLogoUpload();
+      },
+
+      handleOrgNameClick() {
+        if (!AppState.isAdminAuthenticated) {
+          this.openAdminAuthModal();
+          return;
+        }
+        this.openBrandModal();
       },
 
       resetAllPointsToZero() {
@@ -3220,6 +3265,10 @@
 
       // --- BRAND & CUSTOM PNG LOGO CONTROLLERS ---
       triggerOrgLogoUpload() {
+        if (!AppState.isAdminAuthenticated) {
+          this.openAdminAuthModal();
+          return;
+        }
         const input = document.getElementById('orgLogoFileInput');
         if (input) {
           input.value = '';
@@ -3228,6 +3277,10 @@
       },
 
       handleOrgLogoFile(file) {
+        if (!AppState.isAdminAuthenticated) {
+          this.openAdminAuthModal();
+          return;
+        }
         if (!file) return;
         if (!file.type.startsWith('image/')) {
           alert('Please select a valid image file (PNG, JPG, WEBP).');
@@ -3253,6 +3306,10 @@
       },
 
       openBrandModal() {
+        if (!AppState.isAdminAuthenticated) {
+          this.openAdminAuthModal();
+          return;
+        }
         const t = AppState.data.tournament;
         const name = t.orgName || 'WARZONE';
         document.getElementById('brandModalNameInput').value = name;
@@ -3272,6 +3329,10 @@
       },
 
       saveBrandModal() {
+        if (!AppState.isAdminAuthenticated) {
+          this.openAdminAuthModal();
+          return;
+        }
         const newName = document.getElementById('brandModalNameInput').value.trim();
         if (!newName) {
           alert('Name cannot be empty!');
@@ -3292,6 +3353,10 @@
       },
 
       resetOrgLogo() {
+        if (!AppState.isAdminAuthenticated) {
+          this.openAdminAuthModal();
+          return;
+        }
         const name = AppState.data.tournament.orgName || 'WARZONE';
         const initials = name.split(' ').map(w => w[0]).join('').substring(0, 3).toUpperCase() || 'WZ';
         AppState.data.tournament.logoVal = initials;
@@ -3306,6 +3371,10 @@
 
       // --- SETTINGS MODAL ---
       openSettingsModal() {
+        if (!AppState.isAdminAuthenticated) {
+          this.openAdminAuthModal();
+          return;
+        }
         const t = AppState.data.tournament;
         document.getElementById('setOrgName').value = t.orgName || 'WARZONE';
         document.getElementById('setTournTitle').value = t.tournTitle || '';
