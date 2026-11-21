@@ -306,6 +306,9 @@
       letter-spacing: 0.5px;
       text-transform: uppercase;
       color: var(--text-white);
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     /* ==========================================================================
@@ -663,7 +666,7 @@
     }
 
     .squad-row td {
-      padding: 10px 14px;
+      padding: 8px 12px;
       text-align: center;
       vertical-align: middle;
       font-family: var(--font-body);
@@ -800,6 +803,57 @@
 
     .stat-val.kill-val {
       color: var(--coral-red);
+    }
+
+    /* ==========================================================================
+       INLINE EDITABLE POINT INPUTS (ACTIVE IN EDIT MODE)
+       ========================================================================== */
+    .table-point-input {
+      width: 60px;
+      background: #181822;
+      border: 1px solid #3a3a4c;
+      border-radius: var(--radius-sm);
+      color: var(--text-white);
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      text-align: center;
+      padding: 4px 2px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .table-point-input:focus {
+      border-color: var(--coral-red);
+      background: #242434;
+      box-shadow: 0 0 10px rgba(255, 77, 77, 0.4);
+    }
+
+    .table-point-input.win-input {
+      color: var(--gold);
+      border-color: rgba(250, 204, 21, 0.3);
+    }
+
+    .table-point-input.win-input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 10px var(--gold-glow);
+    }
+
+    .table-point-input.pos-input {
+      color: var(--silver);
+    }
+
+    .table-point-input.kill-input {
+      color: var(--coral-red);
+    }
+
+    .table-point-input::-webkit-outer-spin-button,
+    .table-point-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .table-point-input[type=number] {
+      -moz-appearance: textfield;
     }
 
     /* Total Points Pill Badge */
@@ -1250,6 +1304,16 @@
       background: #171720;
     }
 
+    /* Shake Animation for Password Error */
+    @keyframes shake-box {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-10px); }
+      40%, 80% { transform: translateX(10px); }
+    }
+    .shake-error {
+      animation: shake-box 0.4s ease-in-out;
+    }
+
     /* Toast Notification Banner */
     .toast-container {
       position: fixed;
@@ -1328,10 +1392,12 @@
       <!-- Right Controls -->
       <div class="nav-controls">
         
-        <!-- 1. Edit Mode Toggle Switch -->
-        <div class="edit-mode-toggle" id="editModeToggleBtn" title="Toggle Edit Mode (Add/Delete squads, edit scores & rosters)">
+        <!-- 1. Edit Mode Toggle Switch (Protected by Admin Password) -->
+        <div class="edit-mode-toggle" id="editModeToggleBtn" title="Toggle Edit Mode (Password Required)">
           <div class="toggle-switch-ui"></div>
-          <span class="toggle-label" id="editModeLabel">Edit Mode: OFF</span>
+          <span class="toggle-label" id="editModeLabel">
+            <span id="editModeIcon">🔒</span> Edit Mode: OFF
+          </span>
         </div>
 
         <!-- 2. Show Rosters Toggle Button -->
@@ -1346,7 +1412,7 @@
         </button>
 
         <!-- 4. Settings Button -->
-        <button class="btn btn-sm" id="openSettingsModalBtn" title="Tournament branding & scoring settings">
+        <button class="btn btn-sm" id="openSettingsModalBtn" title="Tournament branding, scoring & admin password">
           <span>⚙</span> Settings
         </button>
 
@@ -1435,11 +1501,11 @@
                   <th>POS PTS</th>
                   <th>KILL PTS</th>
                   <th class="th-total">TOTAL</th>
-                  <th class="th-actions" id="thActionsCol" style="display: none; width: 80px;">MANAGE</th>
+                  <th class="th-actions" id="thActionsCol" style="display: none; width: 100px;">MANAGE</th>
                 </tr>
               </thead>
               <tbody id="standingsTableBody">
-                <!-- Rendered dynamically -->
+                <!-- Rendered dynamically with direct point inputs in Edit Mode -->
               </tbody>
             </table>
           </div>
@@ -1596,7 +1662,99 @@
        MODALS
        ========================================================================== -->
 
-  <!-- 1. SETTINGS MODAL -->
+  <!-- 1. ADMIN AUTHENTICATION MODAL -->
+  <div class="modal-backdrop" id="adminAuthModalBackdrop">
+    <div class="modal-box" id="adminAuthModalBox">
+      <div class="modal-header">
+        <h3 class="modal-title">🔒 Admin Authentication</h3>
+        <button class="modal-close-btn" onclick="UI.closeModal('adminAuthModalBackdrop')">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 8px;">
+          <div style="font-size: 32px; background: rgba(255, 77, 77, 0.15); border: 1px solid var(--coral-red); width: 54px; height: 54px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center;">
+            🔐
+          </div>
+          <div>
+            <div style="font-family: var(--font-stats); font-size: 15px; font-weight: 700; color: #fff;">Admin Password Required</div>
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.4;">Enter administrator password to enable Edit Mode and modify point tables.</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="adminAuthPassword">Admin Password</label>
+          <div style="position: relative;">
+            <input type="password" class="form-control" id="adminAuthPassword" placeholder="Enter password (default: admin123)" autocomplete="current-password">
+            <button type="button" id="toggleAdminPassVisibility" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px;">👁️</button>
+          </div>
+          <div id="adminAuthError" style="color: var(--danger-red); font-size: 12px; font-weight: 700; display: none; margin-top: 6px;">❌ Incorrect password! Please try again.</div>
+        </div>
+
+        <div style="font-size: 11px; color: var(--gold); display: flex; align-items: center; gap: 6px;">
+          <span>💡</span> <span>Default Master Password: <b>admin123</b> (changeable in Settings)</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-sm" onclick="UI.closeModal('adminAuthModalBackdrop')">Cancel</button>
+        <button class="btn btn-sm btn-coral" id="submitAdminAuthBtn">
+          <span>🔓</span> Unlock Edit Mode
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. DIRECT SQUAD POINTS EDIT MODAL -->
+  <div class="modal-backdrop" id="editPointsModalBackdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">⚡ Edit Squad Points</h3>
+        <button class="modal-close-btn" onclick="UI.closeModal('editPointsModalBackdrop')">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="editPointsSquadId">
+
+        <div style="font-family: var(--font-stats); font-size: 19px; font-weight: 700; color: var(--gold); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+          <span>🛡️</span> <span id="editPointsSquadNameDisplay">OutLaw</span>
+        </div>
+
+        <div class="form-row-duo">
+          <div class="form-group">
+            <label class="form-label" for="ptsMatchesInput">Matches Played (M.P)</label>
+            <input type="number" class="form-control" id="ptsMatchesInput" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ptsWinsInput">Wins (Booyah/WWCD)</label>
+            <input type="number" class="form-control" id="ptsWinsInput" min="0">
+          </div>
+        </div>
+
+        <div class="form-row-duo">
+          <div class="form-group">
+            <label class="form-label" for="ptsPosInput">Position Points</label>
+            <input type="number" class="form-control" id="ptsPosInput" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ptsKillInput">Kill Points</label>
+            <input type="number" class="form-control" id="ptsKillInput" min="0">
+          </div>
+        </div>
+
+        <div style="background: #181824; border: 1px solid var(--card-border); border-radius: var(--radius-sm); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-family: var(--font-stats); font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Calculated Total Points:</span>
+          <span id="ptsLiveTotalDisplay" style="font-family: var(--font-display); font-size: 26px; font-weight: 700; color: var(--gold);">0 PTS</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-sm" onclick="UI.closeModal('editPointsModalBackdrop')">Cancel</button>
+        <button class="btn btn-sm btn-coral" id="savePointsModalBtn">Save Points</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. SETTINGS MODAL -->
   <div class="modal-backdrop" id="settingsModalBackdrop">
     <div class="modal-box">
       <div class="modal-header">
@@ -1635,6 +1793,17 @@
           <input type="text" class="form-control" id="setLogoVal" placeholder="e.g. WZ or https://image-url.png">
         </div>
 
+        <!-- Admin Password Change Section -->
+        <div style="border-top: 1px solid var(--card-border); padding-top: 14px; margin-top: 4px;">
+          <div class="form-group">
+            <label class="form-label">
+              <span>🔐 Admin Password</span>
+              <span class="helper">Used to unlock Edit Mode</span>
+            </label>
+            <input type="text" class="form-control" id="setAdminPassword" placeholder="Current or new admin password">
+          </div>
+        </div>
+
         <div style="margin-top: 8px;">
           <button type="button" class="btn btn-sm" style="color: var(--danger-red); border-color: rgba(239, 68, 68, 0.3);" id="resetDefaultsBtn">
             <span>⚠️</span> Reset All Data to Default
@@ -1649,7 +1818,7 @@
     </div>
   </div>
 
-  <!-- 2. EDIT SQUAD & ROSTER MODAL -->
+  <!-- 4. EDIT SQUAD & ROSTER MODAL -->
   <div class="modal-backdrop" id="squadModalBackdrop">
     <div class="modal-box">
       <div class="modal-header">
@@ -1705,6 +1874,7 @@
     /**
      * SQUAD POINT TABLE & TOURNAMENT STANDINGS MANAGER
      * Self-contained, persistent, responsive Esports application
+     * With Direct Point Editing & Password Protected Admin Mode
      */
 
     // --- DEFAULT TOURNAMENT STATE & REFERENCE DATA ---
@@ -1743,6 +1913,7 @@
     ];
 
     const DEFAULT_APP_STATE = {
+      adminPassword: 'admin123',
       tournament: {
         orgName: 'WARZONE OFFICIAL',
         tournTitle: 'DAILY PAID SCRIM',
@@ -1779,14 +1950,14 @@
     // --- APPLICATION STATE MANAGER ---
     const AppState = {
       data: null,
-      storageKey: 'warzone_standings_db_v3',
+      isAdminAuthenticated: false,
+      storageKey: 'warzone_standings_db_v4',
 
       init() {
         try {
           const saved = localStorage.getItem(this.storageKey);
           if (saved) {
             this.data = JSON.parse(saved);
-            // Verify structure
             if (!this.data.squads || !this.data.tournament) {
               this.resetToDefaults();
             }
@@ -1797,6 +1968,15 @@
           console.warn('Storage read error, using defaults:', e);
           this.resetToDefaults();
         }
+
+        // Always ensure adminPassword exists
+        if (!this.data.adminPassword) {
+          this.data.adminPassword = 'admin123';
+        }
+
+        // Reset session auth state on fresh page load for security
+        this.isAdminAuthenticated = false;
+        if (this.data.ui) this.data.ui.editMode = false;
       },
 
       save() {
@@ -1809,6 +1989,7 @@
 
       resetToDefaults() {
         this.data = JSON.parse(JSON.stringify(DEFAULT_APP_STATE));
+        this.isAdminAuthenticated = false;
         this.save();
       },
 
@@ -1853,6 +2034,15 @@
         this.playTone(587.33, 'triangle', 0.1, 0.12);
         setTimeout(() => this.playTone(880, 'triangle', 0.2, 0.15), 100);
       },
+      unlock() {
+        this.playTone(523.25, 'sine', 0.1, 0.12);
+        setTimeout(() => this.playTone(659.25, 'sine', 0.1, 0.12), 80);
+        setTimeout(() => this.playTone(783.99, 'sine', 0.2, 0.15), 160);
+      },
+      lock() {
+        this.playTone(587.33, 'sine', 0.12, 0.1);
+        setTimeout(() => this.playTone(440, 'sine', 0.18, 0.1), 100);
+      },
       undo() {
         this.playTone(440, 'sine', 0.12, 0.1);
         setTimeout(() => this.playTone(330, 'sine', 0.18, 0.1), 100);
@@ -1884,12 +2074,23 @@
       },
 
       bindEvents() {
-        // Edit Mode Toggle
+        // Edit Mode Toggle (Password Protected)
         document.getElementById('editModeToggleBtn').addEventListener('click', () => {
-          AppState.data.ui.editMode = !AppState.data.ui.editMode;
-          AppState.save();
-          this.updateEditModeUI();
-          this.renderStandings();
+          this.handleEditModeToggle();
+        });
+
+        // Admin Auth Modal Submit & Enter Key
+        document.getElementById('submitAdminAuthBtn').addEventListener('click', () => {
+          this.verifyAdminPassword();
+        });
+        document.getElementById('adminAuthPassword').addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') this.verifyAdminPassword();
+        });
+
+        // Toggle Admin Password Visibility
+        document.getElementById('toggleAdminPassVisibility').addEventListener('click', () => {
+          const passInput = document.getElementById('adminAuthPassword');
+          passInput.type = passInput.type === 'password' ? 'text' : 'password';
         });
 
         // Show Rosters Toggle
@@ -1949,8 +2150,20 @@
         });
 
         // Add Squad Buttons
-        document.getElementById('addNewSquadBtn').addEventListener('click', () => this.openAddSquadModal());
-        document.getElementById('quickAddSquadBtn').addEventListener('click', () => this.openAddSquadModal());
+        document.getElementById('addNewSquadBtn').addEventListener('click', () => {
+          if (!AppState.isAdminAuthenticated) {
+            this.openAdminAuthModal();
+            return;
+          }
+          this.openAddSquadModal();
+        });
+        document.getElementById('quickAddSquadBtn').addEventListener('click', () => {
+          if (!AppState.isAdminAuthenticated) {
+            this.openAdminAuthModal();
+            return;
+          }
+          this.openAddSquadModal();
+        });
         document.getElementById('saveSquadBtn').addEventListener('click', () => this.saveSquadModal());
 
         // Quick Point Update Form Interactions
@@ -1967,13 +2180,77 @@
         document.getElementById('undoLastUpdateBtn').addEventListener('click', () => this.undoLastMatchUpdate());
         document.getElementById('clearAllHistoryBtn').addEventListener('click', () => this.clearAllHistory());
 
+        // Edit Points Modal Live Total Updates & Save
+        const ptsInputs = ['ptsPosInput', 'ptsKillInput'];
+        ptsInputs.forEach(id => {
+          document.getElementById(id).addEventListener('input', () => this.updateLiveTotalInPointsModal());
+        });
+        document.getElementById('savePointsModalBtn').addEventListener('click', () => this.saveEditPointsModal());
+
         // Quick Action Exports
         document.getElementById('exportCsvBtn').addEventListener('click', () => this.exportCSV());
         document.getElementById('backupJsonBtn').addEventListener('click', () => this.backupJSON());
         document.getElementById('restoreJsonBtn').addEventListener('click', () => {
+          if (!AppState.isAdminAuthenticated) {
+            this.openAdminAuthModal();
+            return;
+          }
           document.getElementById('jsonFileInput').click();
         });
         document.getElementById('jsonFileInput').addEventListener('change', (e) => this.handleRestoreJSON(e));
+      },
+
+      // --- ADMIN AUTHENTICATION CONTROLLER ---
+      handleEditModeToggle() {
+        if (AppState.isAdminAuthenticated) {
+          // If already authenticated, toggle to lock session
+          AppState.isAdminAuthenticated = false;
+          AppState.data.ui.editMode = false;
+          AppState.save();
+          SoundFX.lock();
+          Toast.show('Admin session locked. Viewing mode active.', '🔒');
+          this.updateEditModeUI();
+          this.renderStandings();
+        } else {
+          // Open password modal
+          this.openAdminAuthModal();
+        }
+      },
+
+      openAdminAuthModal() {
+        const passInput = document.getElementById('adminAuthPassword');
+        passInput.value = '';
+        passInput.type = 'password';
+        document.getElementById('adminAuthError').style.display = 'none';
+        this.openModal('adminAuthModalBackdrop');
+        setTimeout(() => passInput.focus(), 150);
+      },
+
+      verifyAdminPassword() {
+        const entered = document.getElementById('adminAuthPassword').value;
+        const currentPass = AppState.data.adminPassword || 'admin123';
+        const errEl = document.getElementById('adminAuthError');
+        const box = document.getElementById('adminAuthModalBox');
+
+        if (entered === currentPass) {
+          AppState.isAdminAuthenticated = true;
+          AppState.data.ui.editMode = true;
+          AppState.save();
+          errEl.style.display = 'none';
+          this.closeModal('adminAuthModalBackdrop');
+
+          SoundFX.unlock();
+          Toast.show('Admin Authenticated! Point table editing unlocked.', '🔓');
+
+          this.updateEditModeUI();
+          this.renderStandings();
+        } else {
+          errEl.style.display = 'block';
+          box.classList.remove('shake-error');
+          void box.offsetWidth; // Trigger reflow for animation restart
+          box.classList.add('shake-error');
+          SoundFX.playTone(220, 'sawtooth', 0.25, 0.15);
+        }
       },
 
       renderAll() {
@@ -2032,6 +2309,10 @@
         addBtn.className = 'group-tab-btn add-group-btn';
         addBtn.innerHTML = '+ Add Group';
         addBtn.addEventListener('click', () => {
+          if (!AppState.isAdminAuthenticated) {
+            this.openAdminAuthModal();
+            return;
+          }
           const nextIndex = AppState.data.groups.length + 1;
           const letter = String.fromCharCode(64 + nextIndex);
           const name = prompt('Enter new Tournament Group Name:', `GROUP ${letter}`);
@@ -2049,7 +2330,7 @@
       },
 
       updateEditModeUI() {
-        const isEdit = AppState.data.ui.editMode;
+        const isEdit = AppState.isAdminAuthenticated && AppState.data.ui.editMode;
         const toggleBtn = document.getElementById('editModeToggleBtn');
         const label = document.getElementById('editModeLabel');
         const addBtn = document.getElementById('addNewSquadBtn');
@@ -2057,12 +2338,12 @@
 
         if (isEdit) {
           toggleBtn.classList.add('active');
-          label.textContent = 'Edit Mode: ON';
+          label.innerHTML = `<span>🔓</span> Admin Mode: ON`;
           addBtn.style.display = 'inline-flex';
           thActions.style.display = 'table-cell';
         } else {
           toggleBtn.classList.remove('active');
-          label.textContent = 'Edit Mode: OFF';
+          label.innerHTML = `<span>🔒</span> Edit Mode: OFF`;
           addBtn.style.display = 'none';
           thActions.style.display = 'none';
         }
@@ -2092,13 +2373,90 @@
         AppState.save();
       },
 
+      // --- DIRECT POINT EDITING CONTROLLERS ---
+      updateTeamPoint(teamId, field, val) {
+        if (!AppState.isAdminAuthenticated) {
+          this.openAdminAuthModal();
+          return;
+        }
+
+        const squads = AppState.getActiveSquads();
+        const sq = squads.find(s => s.id === teamId);
+        if (!sq) return;
+
+        const numVal = Math.max(0, parseInt(val, 10) || 0);
+        sq[field] = numVal;
+
+        // Auto calculate total points: POS PTS + KILL PTS
+        sq.total = (sq.posPts || 0) + (sq.killPts || 0);
+
+        this.sortStandings();
+        AppState.save();
+
+        SoundFX.playTone(660, 'sine', 0.08, 0.06);
+        Toast.show(`${sq.name}: ${field} set to ${numVal} (Total: ${sq.total} PTS)`, '⚡');
+        
+        this.renderStandings();
+        this.populateQuickUpdateDropdowns();
+      },
+
+      openEditPointsModal(teamId) {
+        if (!AppState.isAdminAuthenticated) {
+          this.openAdminAuthModal();
+          return;
+        }
+
+        const squads = AppState.getActiveSquads();
+        const sq = squads.find(s => s.id === teamId);
+        if (!sq) return;
+
+        document.getElementById('editPointsSquadId').value = sq.id;
+        document.getElementById('editPointsSquadNameDisplay').textContent = sq.name;
+        document.getElementById('ptsMatchesInput').value = sq.matches || 0;
+        document.getElementById('ptsWinsInput').value = sq.wins || 0;
+        document.getElementById('ptsPosInput').value = sq.posPts || 0;
+        document.getElementById('ptsKillInput').value = sq.killPts || 0;
+
+        this.updateLiveTotalInPointsModal();
+        this.openModal('editPointsModalBackdrop');
+      },
+
+      updateLiveTotalInPointsModal() {
+        const pos = parseInt(document.getElementById('ptsPosInput').value, 10) || 0;
+        const kill = parseInt(document.getElementById('ptsKillInput').value, 10) || 0;
+        document.getElementById('ptsLiveTotalDisplay').textContent = `${pos + kill} PTS`;
+      },
+
+      saveEditPointsModal() {
+        const id = document.getElementById('editPointsSquadId').value;
+        const squads = AppState.getActiveSquads();
+        const sq = squads.find(s => s.id === id);
+        if (!sq) return;
+
+        sq.matches = Math.max(0, parseInt(document.getElementById('ptsMatchesInput').value, 10) || 0);
+        sq.wins = Math.max(0, parseInt(document.getElementById('ptsWinsInput').value, 10) || 0);
+        sq.posPts = Math.max(0, parseInt(document.getElementById('ptsPosInput').value, 10) || 0);
+        sq.killPts = Math.max(0, parseInt(document.getElementById('ptsKillInput').value, 10) || 0);
+        sq.total = sq.posPts + sq.killPts;
+
+        this.sortStandings();
+        AppState.save();
+
+        SoundFX.save();
+        Toast.show(`Scores saved for ${sq.name}! Total: ${sq.total} PTS`, '💾');
+
+        this.closeModal('editPointsModalBackdrop');
+        this.renderStandings();
+        this.populateQuickUpdateDropdowns();
+      },
+
       renderStandings() {
         const tbody = document.getElementById('standingsTableBody');
         tbody.innerHTML = '';
 
         const squads = AppState.getActiveSquads();
         const query = AppState.data.ui.searchQuery;
-        const isEdit = AppState.data.ui.editMode;
+        const isEdit = AppState.isAdminAuthenticated && AppState.data.ui.editMode;
         const isShowRoster = AppState.data.ui.showRosters;
 
         const filtered = squads.filter(sq => {
@@ -2132,6 +2490,23 @@
 
           const winBadge = sq.wins > 0 ? `<span class="booyah-star" title="${sq.wins} Booyah(s)">★ ${sq.wins}</span>` : '';
 
+          // When in Edit Mode: render direct editable inputs for M.P, WIN, POS PTS, KILL PTS!
+          const mpCell = isEdit 
+            ? `<input type="number" class="table-point-input" title="Edit Matches Played" min="0" value="${sq.matches || 0}" onchange="UI.updateTeamPoint('${sq.id}', 'matches', this.value)">`
+            : `<span class="stat-val">${sq.matches || 0}</span>`;
+
+          const winCell = isEdit 
+            ? `<input type="number" class="table-point-input win-input" title="Edit Wins / Booyahs" min="0" value="${sq.wins || 0}" onchange="UI.updateTeamPoint('${sq.id}', 'wins', this.value)">`
+            : `<span class="stat-val win-val">${sq.wins || 0}</span>`;
+
+          const posCell = isEdit 
+            ? `<input type="number" class="table-point-input pos-input" title="Edit Position Points" min="0" value="${sq.posPts || 0}" onchange="UI.updateTeamPoint('${sq.id}', 'posPts', this.value)">`
+            : `<span class="stat-val pos-val">${sq.posPts || 0}</span>`;
+
+          const killCell = isEdit 
+            ? `<input type="number" class="table-point-input kill-input" title="Edit Kill Points" min="0" value="${sq.killPts || 0}" onchange="UI.updateTeamPoint('${sq.id}', 'killPts', this.value)">`
+            : `<span class="stat-val kill-val">${sq.killPts || 0}</span>`;
+
           tr.innerHTML = `
             <td>
               <span class="rank-badge">${rankBadgeContent}</span>
@@ -2147,17 +2522,18 @@
                 </div>
               </div>
             </td>
-            <td><span class="stat-val">${sq.matches || 0}</span></td>
-            <td><span class="stat-val win-val">${sq.wins || 0}</span></td>
-            <td><span class="stat-val pos-val">${sq.posPts || 0}</span></td>
-            <td><span class="stat-val kill-val">${sq.killPts || 0}</span></td>
+            <td>${mpCell}</td>
+            <td>${winCell}</td>
+            <td>${posCell}</td>
+            <td>${killCell}</td>
             <td>
               <span class="total-pill">${sq.total || 0} PTS</span>
             </td>
             ${isEdit ? `
               <td>
                 <div class="edit-controls-cell">
-                  <button class="action-icon-btn" title="Edit squad & roster" onclick="UI.openEditSquadModal('${sq.id}')">✏️</button>
+                  <button class="action-icon-btn" title="Quick edit points modal" onclick="UI.openEditPointsModal('${sq.id}')">⚡</button>
+                  <button class="action-icon-btn" title="Edit squad name & roster" onclick="UI.openEditSquadModal('${sq.id}')">✏️</button>
                   <button class="action-icon-btn btn-delete" title="Delete squad" onclick="UI.deleteSquad('${sq.id}')">🗑️</button>
                 </div>
               </td>
@@ -2245,6 +2621,11 @@
       },
 
       saveQuickMatchResult() {
+        if (!AppState.isAdminAuthenticated) {
+          this.openAdminAuthModal();
+          return;
+        }
+
         const teamSelect = document.getElementById('formTeamSelect');
         const squadId = teamSelect.value;
         if (!squadId) {
@@ -2313,6 +2694,11 @@
       },
 
       undoLastMatchUpdate() {
+        if (!AppState.isAdminAuthenticated) {
+          this.openAdminAuthModal();
+          return;
+        }
+
         if (!AppState.data.matchHistory || AppState.data.matchHistory.length === 0) {
           Toast.show('No match entries to undo!', 'ℹ️');
           return;
@@ -2342,6 +2728,11 @@
       },
 
       deleteHistoryRecord(id) {
+        if (!AppState.isAdminAuthenticated) {
+          this.openAdminAuthModal();
+          return;
+        }
+
         const idx = AppState.data.matchHistory.findIndex(h => h.id === id);
         if (idx === -1) return;
 
@@ -2369,6 +2760,11 @@
       },
 
       clearAllHistory() {
+        if (!AppState.isAdminAuthenticated) {
+          this.openAdminAuthModal();
+          return;
+        }
+
         if (confirm('Clear all match history logs? (Team points on the leaderboard will remain intact).')) {
           AppState.data.matchHistory = [];
           AppState.save();
@@ -2430,6 +2826,11 @@
       },
 
       openEditSquadModal(squadId) {
+        if (!AppState.isAdminAuthenticated) {
+          this.openAdminAuthModal();
+          return;
+        }
+
         const squads = AppState.getActiveSquads();
         const sq = squads.find(s => s.id === squadId);
         if (!sq) return;
@@ -2501,6 +2902,11 @@
       },
 
       deleteSquad(squadId) {
+        if (!AppState.isAdminAuthenticated) {
+          this.openAdminAuthModal();
+          return;
+        }
+
         const squads = AppState.getActiveSquads();
         const idx = squads.findIndex(s => s.id === squadId);
         if (idx === -1) return;
@@ -2525,6 +2931,7 @@
         document.getElementById('setMatchInfo').value = t.matchInfo || '';
         document.getElementById('setFooterText').value = t.footerText || '';
         document.getElementById('setLogoVal').value = t.logoVal || '';
+        document.getElementById('setAdminPassword').value = AppState.data.adminPassword || 'admin123';
         this.openModal('settingsModalBackdrop');
       },
 
@@ -2537,10 +2944,16 @@
         t.footerText = document.getElementById('setFooterText').value.trim() || 'Powered by WARZONE OFFICIAL';
         t.logoVal = document.getElementById('setLogoVal').value.trim() || 'WZ';
 
+        // Update Admin Password if provided
+        const newPass = document.getElementById('setAdminPassword').value.trim();
+        if (newPass) {
+          AppState.data.adminPassword = newPass;
+        }
+
         AppState.save();
         this.closeModal('settingsModalBackdrop');
         this.updateHeaderBranding();
-        Toast.show('Tournament settings updated!', '⚙️');
+        Toast.show('Tournament settings & password updated!', '⚙️');
       },
 
       openModal(id) {
