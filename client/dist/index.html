@@ -311,88 +311,17 @@
       gap: 6px;
     }
 
-    /* ==========================================================================
-       3. GROUP TABS BAR
-       ========================================================================== */
-    .group-nav-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-      background: var(--card-bg-translucent);
-      backdrop-filter: blur(8px);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-lg);
-      padding: 8px 16px;
-    }
-
-    .group-tabs-list {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .group-tab-btn {
-      padding: 8px 20px;
-      background: transparent;
-      border: 1px solid transparent;
-      border-radius: var(--radius-md);
-      color: var(--text-muted);
-      font-family: var(--font-display);
-      font-size: 20px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      position: relative;
-    }
-
-    .group-tab-btn:hover {
-      color: var(--text-white);
-      background: rgba(255, 255, 255, 0.04);
-    }
-
-    .group-tab-btn.active {
-      color: var(--text-white);
-      background: rgba(255, 77, 77, 0.15);
-      border-color: var(--coral-red);
-      box-shadow: 0 0 15px var(--coral-red-glow);
-    }
-
-    .group-tab-btn.add-group-btn {
-      color: var(--gold);
-      border: 1px dashed var(--gold);
-      background: rgba(250, 204, 21, 0.05);
-      font-family: var(--font-stats);
-      font-size: 14px;
-      font-weight: 700;
-      padding: 6px 14px;
-    }
-
-    .group-tab-btn.add-group-btn:hover {
-      background: rgba(250, 204, 21, 0.15);
-      box-shadow: 0 0 12px var(--gold-glow);
-    }
-
-    .group-nav-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-family: var(--font-stats);
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-    }
-
+    /* Live Status Indicators */
     .live-indicator {
       display: inline-flex;
       align-items: center;
       gap: 6px;
       color: var(--coral-red);
+      font-family: var(--font-stats);
+      font-size: 12px;
       font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
     }
 
     .live-dot {
@@ -411,7 +340,7 @@
     }
 
     /* ==========================================================================
-       4. TWO-COLUMN MAIN LAYOUT
+       3. TWO-COLUMN MAIN LAYOUT
        ========================================================================== */
     .main-grid {
       display: grid;
@@ -427,7 +356,7 @@
     }
 
     /* ==========================================================================
-       5. LEFT COLUMN: STANDINGS BOARD (CAPTURE AREA)
+       4. LEFT COLUMN: STANDINGS BOARD (CAPTURE AREA)
        ========================================================================== */
     .standings-container {
       display: flex;
@@ -476,7 +405,7 @@
     .toolbar-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
 
     /* CAPTURE WRAPPER FOR PNG EXPORT */
@@ -582,7 +511,8 @@
       color: var(--text-muted);
     }
 
-    .group-badge-pill {
+    /* AUTO DATE, YEAR & AM/PM BADGE (CAPTURED IN PNG) */
+    .live-datetime-pill {
       font-family: var(--font-stats);
       font-size: 13px;
       font-weight: 700;
@@ -590,9 +520,13 @@
       text-transform: uppercase;
       padding: 4px 18px;
       border-radius: var(--radius-pill);
-      background: var(--coral-red);
-      color: #fff;
-      box-shadow: 0 0 15px var(--coral-red-glow);
+      background: rgba(250, 204, 21, 0.12);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      box-shadow: 0 0 15px var(--gold-glow);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
 
     /* Standings Table Styling */
@@ -965,7 +899,7 @@
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
       padding: 14px 20px;
       background: #111116;
       border-top: 1px solid var(--card-border);
@@ -977,8 +911,14 @@
       text-transform: uppercase;
     }
 
+    .footer-time-badge {
+      color: var(--gold);
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
     /* ==========================================================================
-       6. RIGHT COLUMN: SIDEBAR CONTROLS
+       5. RIGHT COLUMN: SIDEBAR CONTROLS
        ========================================================================== */
     .sidebar-wrapper {
       display: flex;
@@ -1206,7 +1146,7 @@
     }
 
     /* ==========================================================================
-       7. MODALS, DRAWERS & DIALOGS
+       6. MODALS, DRAWERS & DIALOGS
        ========================================================================== */
     .modal-backdrop {
       position: fixed;
@@ -1354,7 +1294,7 @@
         background: #fff !important;
         color: #000 !important;
       }
-      .top-nav, .group-nav-bar, .table-toolbar, .sidebar-wrapper, .ambient-glow-tl, .ambient-glow-br {
+      .top-nav, .table-toolbar, .sidebar-wrapper, .ambient-glow-tl, .ambient-glow-br {
         display: none !important;
       }
       .main-grid {
@@ -1422,7 +1362,7 @@
         </button>
 
         <!-- 6. Download PNG Button (Coral-Red Glowing) -->
-        <button class="btn btn-coral" id="downloadPngBtn" title="Export high-resolution PNG standings announcement graphic">
+        <button class="btn btn-coral" id="downloadPngBtn" title="Export high-resolution PNG standings announcement graphic with auto date & time">
           <span>📥</span> Download PNG
         </button>
 
@@ -1431,21 +1371,7 @@
     </header>
 
     <!-- ======================================================================
-         2. GROUP STAGE TABS BAR
-         ====================================================================== -->
-    <nav class="group-nav-bar">
-      <div class="group-tabs-list" id="groupTabsContainer">
-        <!-- Rendered dynamically: GROUP A, GROUP B, GROUP C, GROUP D, + ADD GROUP -->
-      </div>
-      <div class="group-nav-info">
-        <span class="live-indicator"><span class="live-dot"></span> LIVE STANDINGS</span>
-        <span>•</span>
-        <span id="teamCountBadge">12 Squads Registered</span>
-      </div>
-    </nav>
-
-    <!-- ======================================================================
-         3. MAIN TWO-COLUMN DASHBOARD GRID (~68% Left, ~32% Right)
+         2. MAIN TWO-COLUMN DASHBOARD GRID (~68% Left, ~32% Right)
          ====================================================================== -->
     <main class="main-grid">
 
@@ -1456,10 +1382,12 @@
         <div class="table-toolbar">
           <div class="search-input-wrap">
             <span>🔍</span>
-            <input type="text" id="squadSearchInput" placeholder="Search squads in this group..." spellcheck="false">
+            <input type="text" id="squadSearchInput" placeholder="Search squads by name or roster..." spellcheck="false">
           </div>
 
           <div class="toolbar-actions">
+            <span class="live-indicator"><span class="live-dot"></span> LIVE STANDINGS</span>
+            <span class="stadium-pill" id="teamCountBadge">12 Squads Registered</span>
             <!-- Add Squad Button (Visible in Edit Mode or via Toolbar) -->
             <button class="btn btn-sm btn-coral" id="addNewSquadBtn" style="display: none;">
               <span>➕</span> Add Squad
@@ -1485,7 +1413,8 @@
 
             <div class="board-header-pills">
               <span class="stadium-pill" id="boardMatchInfo">WEEK 01 DAY 01</span>
-              <span class="group-badge-pill" id="boardGroupPill">GROUP A</span>
+              <!-- Auto Date, Year & AM/PM Badge stamped visibly on the PNG -->
+              <span class="live-datetime-pill" id="boardLiveDateTime">📅 21 NOV 2026 • 08:25 PM</span>
             </div>
           </header>
 
@@ -1510,10 +1439,11 @@
             </table>
           </div>
 
-          <!-- Board Footer -->
+          <!-- Board Footer with Auto Date, Year & Time -->
           <footer class="board-footer">
             <span id="boardFooterText">Powered by WARZONE OFFICIAL</span>
             <span id="boardFooterMeta">Official Battle Royale Scoring • 12 Squads</span>
+            <span class="footer-time-badge" id="boardFooterTime">🕒 21 NOV 2026, 08:25 PM</span>
           </footer>
 
         </div>
@@ -1532,16 +1462,8 @@
           </div>
 
           <form id="quickPointForm" onsubmit="return false;">
-            
-            <!-- Select Tournament Group -->
-            <div class="form-group">
-              <label class="form-label" for="formGroupSelect">Tournament Group</label>
-              <select class="form-control" id="formGroupSelect">
-                <!-- Options populated dynamically -->
-              </select>
-            </div>
 
-            <!-- Select Squad -->
+            <!-- Select Squad Directly (No Group Dropdown Needed) -->
             <div class="form-group">
               <label class="form-label" for="formTeamSelect">
                 Select Squad
@@ -1874,8 +1796,32 @@
     /**
      * SQUAD POINT TABLE & TOURNAMENT STANDINGS MANAGER
      * Self-contained, persistent, responsive Esports application
-     * With Direct Point Editing & Password Protected Admin Mode
+     * Unified Standings with Auto Date, Year & AM/PM PNG Export
      */
+
+    // --- AUTO DATE, YEAR & AM/PM FORMATTER HELPER ---
+    function getAutoDateTime(d = new Date()) {
+      const day = String(d.getDate()).padStart(2, '0');
+      const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+      const month = months[d.getMonth()];
+      const year = d.getFullYear();
+
+      let hours = d.getHours();
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      const seconds = String(d.getSeconds()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12; // '0' becomes '12'
+      const strHours = String(hours).padStart(2, '0');
+
+      return {
+        pill: `📅 ${day} ${month} ${year} • ${strHours}:${minutes} ${ampm}`,
+        footer: `🕒 ${day} ${month} ${year}, ${strHours}:${minutes}:${seconds} ${ampm}`,
+        fileSlug: `${day}-${month}-${year}_${strHours}-${minutes}${ampm}`,
+        readable: `${day} ${month} ${year} at ${strHours}:${minutes} ${ampm}`,
+        timeOnly: `${strHours}:${minutes} ${ampm}`
+      };
+    }
 
     // --- DEFAULT TOURNAMENT STATE & REFERENCE DATA ---
     const DEFAULT_POINT_MATRIX = {
@@ -1897,7 +1843,7 @@
       16: 0
     };
 
-    const DEFAULT_SQUADS_A = [
+    const DEFAULT_SQUADS = [
       { id: 'sq_1',  name: 'OutLaw',           logo: 'OL',  matches: 6, wins: 2, posPts: 50, killPts: 120, total: 170, roster: ['OutLaw_King', 'OutLaw_Viper', 'OutLaw_Zeus', 'OutLaw_Ghost'] },
       { id: 'sq_2',  name: 'ZERO GRAVITY xNS', logo: 'ZG',  matches: 5, wins: 2, posPts: 37, killPts: 73,  total: 110, roster: ['ZG_Ragnar', 'ZG_Kage', 'ZG_Nova', 'ZG_Venom'] },
       { id: 'sq_3',  name: 'FLAWLESS',         logo: 'FLW', matches: 6, wins: 1, posPts: 46, killPts: 57,  total: 103, roster: ['FLW_Ace', 'FLW_Demon', 'FLW_Sniper', 'FLW_Reaper'] },
@@ -1923,22 +1869,10 @@
         logoVal: 'WZ'
       },
       scoring: DEFAULT_POINT_MATRIX,
-      activeGroupId: 'grp_a',
-      groups: [
-        { id: 'grp_a', name: 'GROUP A' },
-        { id: 'grp_b', name: 'GROUP B' },
-        { id: 'grp_c', name: 'GROUP C' },
-        { id: 'grp_d', name: 'GROUP D' }
-      ],
-      squads: {
-        'grp_a': DEFAULT_SQUADS_A,
-        'grp_b': [],
-        'grp_c': [],
-        'grp_d': []
-      },
+      squads: DEFAULT_SQUADS,
       matchHistory: [
-        { id: 'mh_1', groupId: 'grp_a', matchNo: 1, teamId: 'sq_1', teamName: 'OutLaw', pos: 1, posPts: 12, killPts: 20, total: 32, isWin: true, time: 'Match 1' },
-        { id: 'mh_2', groupId: 'grp_a', matchNo: 1, teamId: 'sq_2', teamName: 'ZERO GRAVITY xNS', pos: 2, posPts: 9, killPts: 15, total: 24, isWin: false, time: 'Match 1' }
+        { id: 'mh_1', matchNo: 1, teamId: 'sq_1', teamName: 'OutLaw', pos: 1, posPts: 12, killPts: 20, total: 32, isWin: true, time: 'Match 1' },
+        { id: 'mh_2', matchNo: 1, teamId: 'sq_2', teamName: 'ZERO GRAVITY xNS', pos: 2, posPts: 9, killPts: 15, total: 24, isWin: false, time: 'Match 1' }
       ],
       ui: {
         editMode: false,
@@ -1951,7 +1885,7 @@
     const AppState = {
       data: null,
       isAdminAuthenticated: false,
-      storageKey: 'warzone_standings_db_v4',
+      storageKey: 'warzone_standings_db_v5',
 
       init() {
         try {
@@ -1969,12 +1903,17 @@
           this.resetToDefaults();
         }
 
-        // Always ensure adminPassword exists
+        // Migrate from old multi-group format if present
+        if (this.data.squads && !Array.isArray(this.data.squads) && typeof this.data.squads === 'object') {
+          const firstKey = Object.keys(this.data.squads)[0] || 'grp_a';
+          this.data.squads = Array.isArray(this.data.squads[firstKey]) ? this.data.squads[firstKey] : DEFAULT_SQUADS;
+        }
+
         if (!this.data.adminPassword) {
           this.data.adminPassword = 'admin123';
         }
 
-        // Reset session auth state on fresh page load for security
+        // Fresh session starts locked
         this.isAdminAuthenticated = false;
         if (this.data.ui) this.data.ui.editMode = false;
       },
@@ -1994,14 +1933,10 @@
       },
 
       getActiveSquads() {
-        if (!this.data.squads[this.data.activeGroupId]) {
-          this.data.squads[this.data.activeGroupId] = [];
+        if (!Array.isArray(this.data.squads)) {
+          this.data.squads = DEFAULT_SQUADS;
         }
-        return this.data.squads[this.data.activeGroupId];
-      },
-
-      getActiveGroup() {
-        return this.data.groups.find(g => g.id === this.data.activeGroupId) || this.data.groups[0];
+        return this.data.squads;
       }
     };
 
@@ -2068,9 +2003,26 @@
 
     // --- UI RENDERER & INTERACTION CONTROLLER ---
     const UI = {
+      clockTimer: null,
+
       init() {
         this.bindEvents();
         this.renderAll();
+        this.startClock();
+      },
+
+      startClock() {
+        this.updateLiveClock();
+        if (this.clockTimer) clearInterval(this.clockTimer);
+        this.clockTimer = setInterval(() => this.updateLiveClock(), 1000);
+      },
+
+      updateLiveClock() {
+        const dt = getAutoDateTime();
+        const headerTime = document.getElementById('boardLiveDateTime');
+        const footerTime = document.getElementById('boardFooterTime');
+        if (headerTime) headerTime.textContent = dt.pill;
+        if (footerTime) footerTime.textContent = dt.footer;
       },
 
       bindEvents() {
@@ -2131,7 +2083,7 @@
           }
         });
 
-        // High-Res PNG Download
+        // High-Res PNG Download with Auto Date & Time
         document.getElementById('downloadPngBtn').addEventListener('click', () => {
           this.exportPNG();
         });
@@ -2203,7 +2155,6 @@
       // --- ADMIN AUTHENTICATION CONTROLLER ---
       handleEditModeToggle() {
         if (AppState.isAdminAuthenticated) {
-          // If already authenticated, toggle to lock session
           AppState.isAdminAuthenticated = false;
           AppState.data.ui.editMode = false;
           AppState.save();
@@ -2212,7 +2163,6 @@
           this.updateEditModeUI();
           this.renderStandings();
         } else {
-          // Open password modal
           this.openAdminAuthModal();
         }
       },
@@ -2247,7 +2197,7 @@
         } else {
           errEl.style.display = 'block';
           box.classList.remove('shake-error');
-          void box.offsetWidth; // Trigger reflow for animation restart
+          void box.offsetWidth;
           box.classList.add('shake-error');
           SoundFX.playTone(220, 'sawtooth', 0.25, 0.15);
         }
@@ -2255,12 +2205,12 @@
 
       renderAll() {
         this.updateHeaderBranding();
-        this.renderGroupTabs();
         this.populateQuickUpdateDropdowns();
         this.updateEditModeUI();
         this.updateRosterToggleUI();
         this.renderStandings();
         this.renderMatchHistory();
+        this.updateLiveClock();
       },
 
       updateHeaderBranding() {
@@ -2278,55 +2228,9 @@
           logoEl.textContent = t.logoVal || 'WZ';
         }
 
-        const activeGroup = AppState.getActiveGroup();
-        document.getElementById('boardGroupPill').textContent = activeGroup.name;
-        document.getElementById('boardFooterMeta').textContent = `Official Battle Royale Scoring • ${AppState.getActiveSquads().length} Squads`;
-        document.getElementById('teamCountBadge').textContent = `${AppState.getActiveSquads().length} Squads Registered`;
-      },
-
-      renderGroupTabs() {
-        const container = document.getElementById('groupTabsContainer');
-        container.innerHTML = '';
-
-        AppState.data.groups.forEach(group => {
-          const btn = document.createElement('button');
-          btn.className = `group-tab-btn ${group.id === AppState.data.activeGroupId ? 'active' : ''}`;
-          btn.textContent = group.name;
-          btn.addEventListener('click', () => {
-            AppState.data.activeGroupId = group.id;
-            AppState.save();
-            this.updateHeaderBranding();
-            this.renderGroupTabs();
-            this.populateQuickUpdateDropdowns();
-            this.renderStandings();
-            this.renderMatchHistory();
-          });
-          container.appendChild(btn);
-        });
-
-        // + Add Group Button
-        const addBtn = document.createElement('button');
-        addBtn.className = 'group-tab-btn add-group-btn';
-        addBtn.innerHTML = '+ Add Group';
-        addBtn.addEventListener('click', () => {
-          if (!AppState.isAdminAuthenticated) {
-            this.openAdminAuthModal();
-            return;
-          }
-          const nextIndex = AppState.data.groups.length + 1;
-          const letter = String.fromCharCode(64 + nextIndex);
-          const name = prompt('Enter new Tournament Group Name:', `GROUP ${letter}`);
-          if (name && name.trim()) {
-            const newId = 'grp_' + Date.now();
-            AppState.data.groups.push({ id: newId, name: name.trim().toUpperCase() });
-            AppState.data.squads[newId] = [];
-            AppState.data.activeGroupId = newId;
-            AppState.save();
-            this.renderAll();
-            Toast.show(`Created ${name.trim().toUpperCase()}!`, '✨');
-          }
-        });
-        container.appendChild(addBtn);
+        const count = AppState.getActiveSquads().length;
+        document.getElementById('boardFooterMeta').textContent = `Official Battle Royale Scoring • ${count} Squads`;
+        document.getElementById('teamCountBadge').textContent = `${count} Squads Registered`;
       },
 
       updateEditModeUI() {
@@ -2471,7 +2375,7 @@
               <td colspan="${isEdit ? 8 : 7}" style="text-align: center; padding: 40px; color: var(--text-dim);">
                 <div style="font-size: 32px; margin-bottom: 8px;">🛡️</div>
                 <div style="font-family: var(--font-stats); font-size: 16px; font-weight: 700;">No squads found</div>
-                <div style="font-size: 12px; margin-top: 4px;">Click "+ Add Squad" to register teams for this group.</div>
+                <div style="font-size: 12px; margin-top: 4px;">Click "+ Add Squad" to register teams.</div>
               </td>
             </tr>
           `;
@@ -2570,23 +2474,6 @@
       },
 
       populateQuickUpdateDropdowns() {
-        // Group Select in Sidebar Form
-        const groupSelect = document.getElementById('formGroupSelect');
-        groupSelect.innerHTML = '';
-        AppState.data.groups.forEach(g => {
-          const opt = document.createElement('option');
-          opt.value = g.id;
-          opt.textContent = g.name;
-          if (g.id === AppState.data.activeGroupId) opt.selected = true;
-          groupSelect.appendChild(opt);
-        });
-
-        groupSelect.onchange = (e) => {
-          AppState.data.activeGroupId = e.target.value;
-          AppState.save();
-          this.renderAll();
-        };
-
         // Squad Select in Sidebar Form
         const teamSelect = document.getElementById('formTeamSelect');
         teamSelect.innerHTML = '';
@@ -2651,10 +2538,10 @@
         squad.killPts = (squad.killPts || 0) + killPts;
         squad.total = (squad.posPts || 0) + (squad.killPts || 0);
 
-        // Record in Match History
+        // Record in Match History with Auto Timestamp
+        const dt = getAutoDateTime();
         const record = {
           id: 'mh_' + Date.now(),
-          groupId: AppState.data.activeGroupId,
           matchNo: matchNo,
           teamId: squad.id,
           teamName: squad.name,
@@ -2663,7 +2550,7 @@
           killPts: killPts,
           total: matchTotal,
           isWin: isWin,
-          time: `Match ${matchNo}`
+          time: `Match ${matchNo} • ${dt.timeOnly}`
         };
         AppState.data.matchHistory.unshift(record);
 
@@ -2705,7 +2592,7 @@
         }
 
         const latest = AppState.data.matchHistory.shift();
-        const squadList = AppState.data.squads[latest.groupId] || [];
+        const squadList = AppState.getActiveSquads();
         const squad = squadList.find(s => s.id === latest.teamId);
 
         if (squad) {
@@ -2738,7 +2625,7 @@
 
         const record = AppState.data.matchHistory[idx];
         if (confirm(`Delete this match record for ${record.teamName}? Points will be deducted from team total.`)) {
-          const squadList = AppState.data.squads[record.groupId] || [];
+          const squadList = AppState.getActiveSquads();
           const squad = squadList.find(s => s.id === record.teamId);
           if (squad) {
             squad.matches = Math.max(0, (squad.matches || 1) - 1);
@@ -2967,11 +2854,11 @@
       // --- EXPORT & SHARE FUNCTIONS ---
       shareStandings() {
         const squads = AppState.getActiveSquads();
-        const activeGroup = AppState.getActiveGroup();
         const t = AppState.data.tournament;
+        const dt = getAutoDateTime();
 
         let text = `🏆 ${t.tournTitle} — ${t.tournSubtitle}\n`;
-        text += `📊 ${activeGroup.name} | ${t.matchInfo}\n`;
+        text += `📅 ${dt.readable} | ${t.matchInfo}\n`;
         text += `═══════════════════════════════\n`;
         text += `RK  TEAM NAME           M   W   PTS\n`;
         text += `───────────────────────────────\n`;
@@ -2999,12 +2886,16 @@
         const captureEl = document.getElementById('captureArea');
         if (!captureEl) return;
 
+        // Auto format current live date, year and AM/PM time
+        const dt = getAutoDateTime();
+        this.updateLiveClock();
+
         const downloadBtn = document.getElementById('downloadPngBtn');
         const origText = downloadBtn.innerHTML;
         downloadBtn.innerHTML = '<span>⏳</span> Rendering...';
         downloadBtn.style.pointerEvents = 'none';
 
-        Toast.show('Generating high-resolution PNG graphic...', '⏳');
+        Toast.show(`Rendering Standings PNG (${dt.timeOnly})...`, '⏳');
 
         // Execute html2canvas at 2.5x scale for razor-sharp social media banner quality
         html2canvas(captureEl, {
@@ -3014,14 +2905,14 @@
           logging: false
         }).then(canvas => {
           const link = document.createElement('a');
-          const groupName = AppState.getActiveGroup().name.replace(/\s+/g, '-');
-          link.download = `Standings-${groupName}-${Date.now()}.png`;
+          // Automatically includes date, month, year, hours, minutes and AM/PM
+          link.download = `Standings-${dt.fileSlug}.png`;
           link.href = canvas.toDataURL('image/png');
           link.click();
 
           downloadBtn.innerHTML = origText;
           downloadBtn.style.pointerEvents = 'auto';
-          Toast.show('✅ PNG Downloaded Successfully!', '📥');
+          Toast.show(`✅ PNG Downloaded! (Standings-${dt.fileSlug}.png)`, '📥');
         }).catch(err => {
           console.error('PNG Export failed:', err);
           downloadBtn.innerHTML = origText;
@@ -3032,7 +2923,7 @@
 
       exportCSV() {
         const squads = AppState.getActiveSquads();
-        const activeGroup = AppState.getActiveGroup();
+        const dt = getAutoDateTime();
         let csv = 'Rank,Squad Name,Matches,Wins,Position Points,Kill Points,Total Points,Roster\n';
 
         squads.forEach((sq, i) => {
@@ -3043,16 +2934,17 @@
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `Standings-${activeGroup.name.replace(/\s+/g, '-')}.csv`;
+        link.download = `Standings-${dt.fileSlug}.csv`;
         link.click();
         Toast.show('CSV File Exported!', '📊');
       },
 
       backupJSON() {
+        const dt = getAutoDateTime();
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(AppState.data, null, 2));
         const link = document.createElement('a');
         link.href = dataStr;
-        link.download = `Warzone-Tournament-Backup-${Date.now()}.json`;
+        link.download = `Warzone-Tournament-Backup-${dt.fileSlug}.json`;
         link.click();
         Toast.show('Tournament backup JSON saved!', '💾');
       },
