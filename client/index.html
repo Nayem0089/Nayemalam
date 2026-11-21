@@ -3,16 +3,2676 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WARZONE OFFICIAL — Esports Tournament Standings Manager</title>
-  <link rel="icon" type="image/png" href="/assets/warzone-logo.png">
+  <title>Squad Point Table | Tournament Standings Manager</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff4d4d'%3E%3Cpath d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/%3E%3C/svg%3E">
 
-  <!-- Google Esports Fonts -->
+  <!-- Google Fonts: Teko, Rajdhani, Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- html2canvas for High-Res PNG Capture -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    /* ==========================================================================
+       1. CSS VARIABLES & THEME SETUP
+       ========================================================================== */
+    :root {
+      --bg-dark: #0b0b0f;
+      --card-bg: #141418;
+      --card-bg-translucent: rgba(20, 20, 24, 0.85);
+      --card-border: #26262e;
+      --card-border-glow: rgba(255, 77, 77, 0.35);
+      
+      --coral-red: #ff4d4d;
+      --coral-red-hover: #ff3333;
+      --coral-red-glow: rgba(255, 77, 77, 0.45);
+      
+      --gold: #facc15;
+      --gold-hover: #eab308;
+      --gold-glow: rgba(250, 204, 21, 0.5);
+      --gold-dark: #854d0e;
+
+      --silver: #cbd5e1;
+      --bronze: #d97706;
+
+      --text-white: #ffffff;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --success-green: #22c55e;
+      --danger-red: #ef4444;
+
+      --font-display: 'Teko', sans-serif;
+      --font-stats: 'Rajdhani', sans-serif;
+      --font-body: 'Inter', sans-serif;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-pill: 9999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 10% 10%, rgba(255, 77, 77, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 90% 90%, rgba(250, 204, 21, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(255, 77, 77, 0.04) 0%, transparent 60%);
+      background-attachment: fixed;
+      color: var(--text-white);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Corner Glow Effects */
+    .ambient-glow-tl {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(255, 77, 77, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .ambient-glow-br {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(250, 204, 21, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app-wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1560px;
+      margin: 0 auto;
+      padding: 16px 24px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      flex: 1;
+    }
+
+    /* ==========================================================================
+       2. TOP NAVIGATION BAR
+       ========================================================================== */
+    .top-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      background: var(--card-bg-translucent);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 14px 20px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon-box {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, rgba(255, 77, 77, 0.2), rgba(250, 204, 21, 0.15));
+      border: 1px solid var(--coral-red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: var(--gold);
+      box-shadow: 0 0 15px var(--coral-red-glow);
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      line-height: 1;
+      color: var(--text-white);
+    }
+
+    .brand-title span {
+      color: var(--coral-red);
+      font-weight: 800;
+    }
+
+    .brand-subtitle {
+      font-family: var(--font-stats);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    /* Common Button Styles */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: var(--radius-md);
+      font-family: var(--font-stats);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: 1px solid var(--card-border);
+      background: #1c1c22;
+      color: var(--text-white);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: #282832;
+      border-color: #3f3f4e;
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-coral {
+      background: linear-gradient(135deg, var(--coral-red), #d62828);
+      border-color: var(--coral-red);
+      color: #fff;
+      box-shadow: 0 0 15px var(--coral-red-glow);
+    }
+
+    .btn-coral:hover {
+      background: linear-gradient(135deg, #ff6666, var(--coral-red));
+      border-color: #ff8080;
+      box-shadow: 0 0 25px rgba(255, 77, 77, 0.65);
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold), #ca8a04);
+      border-color: var(--gold);
+      color: #0b0b0f;
+      font-weight: 800;
+      box-shadow: 0 0 15px var(--gold-glow);
+    }
+
+    .btn-gold:hover {
+      background: linear-gradient(135deg, #fde047, var(--gold));
+      box-shadow: 0 0 25px rgba(250, 204, 21, 0.7);
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    /* Edit Mode Toggle Switch */
+    .edit-mode-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #18181f;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 6px 12px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+
+    .edit-mode-toggle:hover {
+      border-color: #3f3f4e;
+    }
+
+    .edit-mode-toggle.active {
+      border-color: var(--coral-red);
+      background: rgba(255, 77, 77, 0.12);
+      box-shadow: 0 0 12px rgba(255, 77, 77, 0.3);
+    }
+
+    .toggle-switch-ui {
+      width: 36px;
+      height: 20px;
+      background: #2b2b36;
+      border-radius: var(--radius-pill);
+      position: relative;
+      transition: background 0.25s ease;
+    }
+
+    .toggle-switch-ui::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.25s ease, background 0.25s ease;
+    }
+
+    .edit-mode-toggle.active .toggle-switch-ui {
+      background: var(--coral-red);
+    }
+
+    .edit-mode-toggle.active .toggle-switch-ui::after {
+      transform: translateX(16px);
+      background: #fff;
+    }
+
+    .toggle-label {
+      font-family: var(--font-stats);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text-white);
+    }
+
+    /* ==========================================================================
+       3. GROUP TABS BAR
+       ========================================================================== */
+    .group-nav-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      background: var(--card-bg-translucent);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 8px 16px;
+    }
+
+    .group-tabs-list {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .group-tab-btn {
+      padding: 8px 20px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      font-family: var(--font-display);
+      font-size: 20px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .group-tab-btn:hover {
+      color: var(--text-white);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .group-tab-btn.active {
+      color: var(--text-white);
+      background: rgba(255, 77, 77, 0.15);
+      border-color: var(--coral-red);
+      box-shadow: 0 0 15px var(--coral-red-glow);
+    }
+
+    .group-tab-btn.add-group-btn {
+      color: var(--gold);
+      border: 1px dashed var(--gold);
+      background: rgba(250, 204, 21, 0.05);
+      font-family: var(--font-stats);
+      font-size: 14px;
+      font-weight: 700;
+      padding: 6px 14px;
+    }
+
+    .group-tab-btn.add-group-btn:hover {
+      background: rgba(250, 204, 21, 0.15);
+      box-shadow: 0 0 12px var(--gold-glow);
+    }
+
+    .group-nav-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--font-stats);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .live-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--coral-red);
+      font-weight: 700;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--coral-red);
+      box-shadow: 0 0 10px var(--coral-red);
+      animation: pulse-dot 1.5s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0% { transform: scale(0.9); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.8; }
+    }
+
+    /* ==========================================================================
+       4. TWO-COLUMN MAIN LAYOUT
+       ========================================================================== */
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 68%) minmax(0, 32%);
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 1180px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ==========================================================================
+       5. LEFT COLUMN: STANDINGS BOARD (CAPTURE AREA)
+       ========================================================================== */
+    .standings-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .table-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      background: var(--card-bg-translucent);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 10px 16px;
+    }
+
+    .search-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #18181f;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      flex: 1;
+      max-width: 320px;
+    }
+
+    .search-input-wrap input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-white);
+      font-family: var(--font-body);
+      font-size: 13px;
+      width: 100%;
+    }
+
+    .search-input-wrap input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .toolbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* CAPTURE WRAPPER FOR PNG EXPORT */
+    .capture-board {
+      background: #0f0f14;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+      position: relative;
+    }
+
+    /* Tournament Header inside Capture Area */
+    .board-header {
+      padding: 24px 24px 18px;
+      background: linear-gradient(180deg, rgba(255, 77, 77, 0.08) 0%, rgba(20, 20, 24, 0.6) 100%);
+      border-bottom: 2px solid rgba(255, 77, 77, 0.25);
+      position: relative;
+      text-align: center;
+    }
+
+    .board-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .org-logo-slot {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background: #181820;
+      border: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--coral-red);
+      overflow: hidden;
+    }
+
+    .org-logo-slot img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .org-name-text {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--text-white);
+      text-transform: uppercase;
+    }
+
+    .tourn-title-text {
+      font-family: var(--font-display);
+      font-size: 48px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      line-height: 1.05;
+      color: var(--text-white);
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+      margin-bottom: 4px;
+    }
+
+    .tourn-subtitle-text {
+      font-family: var(--font-display);
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      line-height: 1;
+      color: var(--gold);
+      text-shadow: 0 0 15px var(--gold-glow);
+      margin-bottom: 12px;
+    }
+
+    .board-header-pills {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .stadium-pill {
+      font-family: var(--font-stats);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 4px 16px;
+      border-radius: var(--radius-pill);
+      background: #1c1c24;
+      border: 1px solid #333340;
+      color: var(--text-muted);
+    }
+
+    .group-badge-pill {
+      font-family: var(--font-stats);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 4px 18px;
+      border-radius: var(--radius-pill);
+      background: var(--coral-red);
+      color: #fff;
+      box-shadow: 0 0 15px var(--coral-red-glow);
+    }
+
+    /* Standings Table Styling */
+    .standings-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .standings-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 6px;
+      padding: 12px 16px;
+    }
+
+    .standings-table thead th {
+      font-family: var(--font-stats);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 10px 14px;
+      text-align: center;
+      background: transparent;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .standings-table thead th.th-rank {
+      width: 60px;
+      text-align: center;
+    }
+
+    .standings-table thead th.th-team {
+      text-align: left;
+      padding-left: 18px;
+    }
+
+    .standings-table thead th.th-total {
+      width: 110px;
+      text-align: right;
+      padding-right: 20px;
+    }
+
+    /* Table Rows */
+    .squad-row {
+      background: #15151c;
+      border: 1px solid #23232c;
+      transition: all 0.2s ease;
+    }
+
+    .squad-row:hover {
+      background: #1c1c26;
+      border-color: #383846;
+    }
+
+    /* Rank 1 Highlight */
+    .squad-row.rank-1 {
+      background: linear-gradient(90deg, rgba(250, 204, 21, 0.12) 0%, rgba(20, 20, 26, 0.95) 45%, #15151c 100%);
+      border: 1px solid rgba(250, 204, 21, 0.45);
+      box-shadow: 0 4px 20px rgba(250, 204, 21, 0.12);
+    }
+
+    /* Rank 2 & 3 Subtle Glow */
+    .squad-row.rank-2 {
+      border-left: 3px solid var(--silver);
+    }
+
+    .squad-row.rank-3 {
+      border-left: 3px solid var(--bronze);
+    }
+
+    .squad-row td {
+      padding: 10px 14px;
+      text-align: center;
+      vertical-align: middle;
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text-white);
+      border-top: 1px solid rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+    }
+
+    .squad-row td:first-child {
+      border-top-left-radius: var(--radius-sm);
+      border-bottom-left-radius: var(--radius-sm);
+    }
+
+    .squad-row td:last-child {
+      border-top-right-radius: var(--radius-sm);
+      border-bottom-right-radius: var(--radius-sm);
+      text-align: right;
+      padding-right: 20px;
+    }
+
+    /* Rank Badges */
+    .rank-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1;
+      background: #1f1f2a;
+      color: var(--text-muted);
+      border: 1px solid #333342;
+    }
+
+    .rank-1 .rank-badge {
+      background: linear-gradient(135deg, var(--gold), #ca8a04);
+      color: #0b0b0f;
+      border-color: var(--gold);
+      box-shadow: 0 0 15px var(--gold-glow);
+    }
+
+    .rank-2 .rank-badge {
+      background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+      color: #0b0b0f;
+      border-color: #cbd5e1;
+    }
+
+    .rank-3 .rank-badge {
+      background: linear-gradient(135deg, #f59e0b, #b45309);
+      color: #fff;
+      border-color: #d97706;
+    }
+
+    /* Team Info Column */
+    .team-cell {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-align: left;
+    }
+
+    .team-logo-box {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      background: #1f1f28;
+      border: 1px solid #333342;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--coral-red);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .team-logo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .team-details {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .team-name-text {
+      font-family: var(--font-stats);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--text-white);
+      line-height: 1.1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .rank-1 .team-name-text {
+      color: #fff;
+      font-size: 19px;
+    }
+
+    .booyah-star {
+      color: var(--gold);
+      font-size: 14px;
+      filter: drop-shadow(0 0 6px var(--gold-glow));
+    }
+
+    /* Stats Values */
+    .stat-val {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text-white);
+      line-height: 1;
+    }
+
+    .stat-val.win-val {
+      color: var(--gold);
+    }
+
+    .stat-val.pos-val {
+      color: var(--silver);
+    }
+
+    .stat-val.kill-val {
+      color: var(--coral-red);
+    }
+
+    /* Total Points Pill Badge */
+    .total-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 14px;
+      border-radius: var(--radius-pill);
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      line-height: 1;
+      background: #20202a;
+      border: 1px solid #383848;
+      color: var(--text-white);
+      min-width: 75px;
+    }
+
+    /* #1 RANK TOTAL PILL: BRIGHT GOLD #facc15 */
+    .rank-1 .total-pill {
+      background: linear-gradient(135deg, var(--gold), #eab308);
+      border-color: var(--gold);
+      color: #0b0b0f;
+      font-size: 24px;
+      font-weight: 800;
+      box-shadow: 0 0 20px var(--gold-glow);
+    }
+
+    /* Roster Row (Sub-Row under each Squad) */
+    .roster-row td {
+      padding: 4px 14px 12px 64px !important;
+      background: #121218;
+      border-top: none !important;
+      border-bottom: 2px solid #1f1f28 !important;
+    }
+
+    .roster-chips-wrap {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .roster-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: var(--radius-sm);
+      background: #1a1a24;
+      border: 1px solid #2d2d3a;
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+
+    .roster-chip:hover {
+      border-color: var(--coral-red);
+      color: var(--text-white);
+    }
+
+    .roster-chip-icon {
+      font-size: 10px;
+      color: var(--coral-red);
+    }
+
+    /* Edit Mode Row Controls */
+    .edit-controls-cell {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    .action-icon-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      background: #20202a;
+      border: 1px solid #333344;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .action-icon-btn:hover {
+      background: #2d2d3c;
+      color: var(--text-white);
+      border-color: #4a4a5e;
+    }
+
+    .action-icon-btn.btn-delete:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: var(--danger-red);
+      color: var(--danger-red);
+    }
+
+    /* Board Footer */
+    .board-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px 20px;
+      background: #111116;
+      border-top: 1px solid var(--card-border);
+      font-family: var(--font-stats);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dim);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* ==========================================================================
+       6. RIGHT COLUMN: SIDEBAR CONTROLS
+       ========================================================================== */
+    .sidebar-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .panel-card {
+      background: var(--card-bg-translucent);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .panel-title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-white);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-title .icon {
+      color: var(--coral-red);
+      font-size: 18px;
+    }
+
+    .panel-badge {
+      font-family: var(--font-stats);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 77, 77, 0.15);
+      border: 1px solid rgba(255, 77, 77, 0.3);
+      color: var(--coral-red);
+    }
+
+    /* Quick Point Update Form */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .form-label {
+      font-family: var(--font-stats);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .form-label .helper {
+      font-size: 11px;
+      color: var(--gold);
+      text-transform: none;
+    }
+
+    .form-control {
+      width: 100%;
+      background: #181820;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      padding: 9px 12px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text-white);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-control:focus {
+      border-color: var(--coral-red);
+      box-shadow: 0 0 10px rgba(255, 77, 77, 0.25);
+      background: #1e1e28;
+    }
+
+    .form-row-duo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .form-checkbox-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #181822;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      cursor: pointer;
+      user-select: none;
+      margin-bottom: 16px;
+      transition: all 0.2s ease;
+    }
+
+    .form-checkbox-wrap:hover {
+      border-color: #3f3f4e;
+    }
+
+    .form-checkbox-wrap input[type="checkbox"] {
+      accent-color: var(--coral-red);
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .form-checkbox-label {
+      font-family: var(--font-stats);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    .form-actions-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .form-btn-duo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* Match History List */
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .history-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .history-list::-webkit-scrollbar-thumb {
+      background: #2b2b38;
+      border-radius: var(--radius-pill);
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: #181822;
+      border: 1px solid #262634;
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-size: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .history-item:hover {
+      border-color: #383848;
+      background: #1e1e2c;
+    }
+
+    .hist-team {
+      font-family: var(--font-stats);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-white);
+    }
+
+    .hist-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .hist-badge {
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: #252534;
+      color: var(--gold);
+    }
+
+    .hist-pts {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--coral-red);
+    }
+
+    /* Quick Shortcuts Grid */
+    .shortcuts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* ==========================================================================
+       7. MODALS, DRAWERS & DIALOGS
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-box {
+      background: #15151c;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 16px 50px rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: translateY(20px);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-backdrop.open .modal-box {
+      transform: translateY(0);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--card-border);
+      background: #1a1a24;
+    }
+
+    .modal-title {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-white);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+      transition: color 0.2s ease;
+    }
+
+    .modal-close-btn:hover {
+      color: var(--text-white);
+    }
+
+    .modal-body {
+      padding: 20px;
+      max-height: 70vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 14px 20px;
+      border-top: 1px solid var(--card-border);
+      background: #171720;
+    }
+
+    /* Toast Notification Banner */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast-msg {
+      background: #181822;
+      border: 1px solid var(--coral-red);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), 0 0 15px var(--coral-red-glow);
+      font-family: var(--font-stats);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slide-in 0.3s ease forwards;
+    }
+
+    @keyframes slide-in {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Print / PDF overrides */
+    @media print {
+      body {
+        background: #fff !important;
+        color: #000 !important;
+      }
+      .top-nav, .group-nav-bar, .table-toolbar, .sidebar-wrapper, .ambient-glow-tl, .ambient-glow-br {
+        display: none !important;
+      }
+      .main-grid {
+        display: block !important;
+      }
+      .capture-board {
+        border: none !important;
+        box-shadow: none !important;
+      }
+    }
+  </style>
 </head>
-<body class="bg-warzone-void text-white antialiased overflow-x-hidden min-h-screen">
-  <div id="root"></div>
-  <script type="module" src="/src/main.jsx"></script>
+<body>
+
+  <!-- Ambient Glow Sprites in Corners -->
+  <div class="ambient-glow-tl" aria-hidden="true"></div>
+  <div class="ambient-glow-br" aria-hidden="true"></div>
+
+  <div class="app-wrapper">
+
+    <!-- ======================================================================
+         1. TOP NAVIGATION BAR
+         ====================================================================== -->
+    <header class="top-nav">
+      
+      <!-- Left: Trophy Icon + Brand Title -->
+      <div class="nav-brand">
+        <div class="brand-icon-box">🏆</div>
+        <div>
+          <div class="brand-title">Squad Point Table <span>| Standings Manager</span></div>
+          <div class="brand-subtitle">Esports Tournament Leaderboard Suite</div>
+        </div>
+      </div>
+
+      <!-- Right Controls -->
+      <div class="nav-controls">
+        
+        <!-- 1. Edit Mode Toggle Switch -->
+        <div class="edit-mode-toggle" id="editModeToggleBtn" title="Toggle Edit Mode (Add/Delete squads, edit scores & rosters)">
+          <div class="toggle-switch-ui"></div>
+          <span class="toggle-label" id="editModeLabel">Edit Mode: OFF</span>
+        </div>
+
+        <!-- 2. Show Rosters Toggle Button -->
+        <button class="btn btn-sm" id="showRostersToggleBtn" title="Show or Hide squad player names directly under team rows">
+          <span id="rosterToggleIcon">👥</span>
+          <span id="rosterToggleText">Show Rosters: OFF</span>
+        </button>
+
+        <!-- 3. Share Button -->
+        <button class="btn btn-sm" id="shareStandingsBtn" title="Copy text summary of standings to clipboard">
+          <span>📋</span> Share
+        </button>
+
+        <!-- 4. Settings Button -->
+        <button class="btn btn-sm" id="openSettingsModalBtn" title="Tournament branding & scoring settings">
+          <span>⚙</span> Settings
+        </button>
+
+        <!-- 5. Fullscreen Toggle -->
+        <button class="btn btn-sm" id="fullscreenToggleBtn" title="Fullscreen Broadcast Mode">
+          <span>⛶</span>
+        </button>
+
+        <!-- 6. Download PNG Button (Coral-Red Glowing) -->
+        <button class="btn btn-coral" id="downloadPngBtn" title="Export high-resolution PNG standings announcement graphic">
+          <span>📥</span> Download PNG
+        </button>
+
+      </div>
+
+    </header>
+
+    <!-- ======================================================================
+         2. GROUP STAGE TABS BAR
+         ====================================================================== -->
+    <nav class="group-nav-bar">
+      <div class="group-tabs-list" id="groupTabsContainer">
+        <!-- Rendered dynamically: GROUP A, GROUP B, GROUP C, GROUP D, + ADD GROUP -->
+      </div>
+      <div class="group-nav-info">
+        <span class="live-indicator"><span class="live-dot"></span> LIVE STANDINGS</span>
+        <span>•</span>
+        <span id="teamCountBadge">12 Squads Registered</span>
+      </div>
+    </nav>
+
+    <!-- ======================================================================
+         3. MAIN TWO-COLUMN DASHBOARD GRID (~68% Left, ~32% Right)
+         ====================================================================== -->
+    <main class="main-grid">
+
+      <!-- ================= LEFT COLUMN: STANDINGS BOARD ================= -->
+      <section class="standings-container">
+        
+        <!-- Toolbar above table -->
+        <div class="table-toolbar">
+          <div class="search-input-wrap">
+            <span>🔍</span>
+            <input type="text" id="squadSearchInput" placeholder="Search squads in this group..." spellcheck="false">
+          </div>
+
+          <div class="toolbar-actions">
+            <!-- Add Squad Button (Visible in Edit Mode or via Toolbar) -->
+            <button class="btn btn-sm btn-coral" id="addNewSquadBtn" style="display: none;">
+              <span>➕</span> Add Squad
+            </button>
+            <button class="btn btn-sm" id="sortRankingBtn" title="Recalculate and sort leaderboard">
+              <span>⚡</span> Auto-Rank
+            </button>
+          </div>
+        </div>
+
+        <!-- ================= OFFICIAL CAPTURE AREA (PNG EXPORT ELEMENT) ================= -->
+        <div class="capture-board" id="captureArea">
+          
+          <!-- Tournament Header -->
+          <header class="board-header">
+            <div class="board-header-top">
+              <div class="org-logo-slot" id="boardOrgLogo">WZ</div>
+              <div class="org-name-text" id="boardOrgName">WARZONE OFFICIAL</div>
+            </div>
+
+            <h1 class="tourn-title-text" id="boardTournTitle">DAILY PAID SCRIM</h1>
+            <h2 class="tourn-subtitle-text" id="boardTournSubtitle">OVERALL STANDINGS</h2>
+
+            <div class="board-header-pills">
+              <span class="stadium-pill" id="boardMatchInfo">WEEK 01 DAY 01</span>
+              <span class="group-badge-pill" id="boardGroupPill">GROUP A</span>
+            </div>
+          </header>
+
+          <!-- Standings Table Container -->
+          <div class="standings-table-wrap">
+            <table class="standings-table" id="standingsTable">
+              <thead>
+                <tr>
+                  <th class="th-rank">#</th>
+                  <th class="th-team">SQUAD / TEAM NAME</th>
+                  <th>M.P</th>
+                  <th>WIN</th>
+                  <th>POS PTS</th>
+                  <th>KILL PTS</th>
+                  <th class="th-total">TOTAL</th>
+                  <th class="th-actions" id="thActionsCol" style="display: none; width: 80px;">MANAGE</th>
+                </tr>
+              </thead>
+              <tbody id="standingsTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Board Footer -->
+          <footer class="board-footer">
+            <span id="boardFooterText">Powered by WARZONE OFFICIAL</span>
+            <span id="boardFooterMeta">Official Battle Royale Scoring • 12 Squads</span>
+          </footer>
+
+        </div>
+        <!-- ================= END CAPTURE AREA ================= -->
+
+      </section>
+
+      <!-- ================= RIGHT COLUMN: SIDEBAR CONTROLS ================= -->
+      <aside class="sidebar-wrapper">
+
+        <!-- CARD 1: QUICK POINT UPDATE PANEL -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <h2 class="panel-title"><span class="icon">⚡</span> Quick Point Update</h2>
+            <span class="panel-badge">Match Entry</span>
+          </div>
+
+          <form id="quickPointForm" onsubmit="return false;">
+            
+            <!-- Select Tournament Group -->
+            <div class="form-group">
+              <label class="form-label" for="formGroupSelect">Tournament Group</label>
+              <select class="form-control" id="formGroupSelect">
+                <!-- Options populated dynamically -->
+              </select>
+            </div>
+
+            <!-- Select Squad -->
+            <div class="form-group">
+              <label class="form-label" for="formTeamSelect">
+                Select Squad
+                <span class="helper">Choose team to score</span>
+              </label>
+              <select class="form-control" id="formTeamSelect">
+                <!-- Options populated dynamically -->
+              </select>
+            </div>
+
+            <!-- Match # & Finish Position Duo -->
+            <div class="form-row-duo">
+              <div class="form-group">
+                <label class="form-label" for="formMatchNumber">Match #</label>
+                <input type="number" class="form-control" id="formMatchNumber" value="1" min="1" max="99">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="formPositionSelect">Finish Position</label>
+                <select class="form-control" id="formPositionSelect">
+                  <!-- Generated dynamically from point matrix -->
+                </select>
+              </div>
+            </div>
+
+            <!-- Position Points & Kill Points Duo -->
+            <div class="form-row-duo">
+              <div class="form-group">
+                <label class="form-label" for="formPositionPoints">
+                  Position Pts
+                  <span class="helper">Auto-calculated</span>
+                </label>
+                <input type="number" class="form-control" id="formPositionPoints" placeholder="0" min="0">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="formKillPoints">
+                  Kill Points
+                  <span class="helper">Kills</span>
+                </label>
+                <input type="number" class="form-control" id="formKillPoints" placeholder="0" min="0">
+              </div>
+            </div>
+
+            <!-- Winner / Booyah (WWCD) Checkbox -->
+            <label class="form-checkbox-wrap" for="formWinCheck">
+              <input type="checkbox" id="formWinCheck">
+              <span class="form-checkbox-label">🏆 Winner / Booyah (WWCD)</span>
+            </label>
+
+            <!-- Action Buttons -->
+            <div class="form-actions-stack">
+              <button type="button" class="btn btn-coral" id="saveMatchResultBtn" style="padding: 12px; font-size: 15px;">
+                <span>💾</span> SAVE MATCH RESULT
+              </button>
+
+              <div class="form-btn-duo">
+                <button type="button" class="btn btn-sm" id="resetFormBtn">
+                  <span>↺</span> Reset Form
+                </button>
+                <button type="button" class="btn btn-sm" id="undoLastUpdateBtn">
+                  <span>↩</span> Undo Last
+                </button>
+              </div>
+            </div>
+
+          </form>
+        </div>
+
+        <!-- CARD 2: MATCH HISTORY LOG -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <h2 class="panel-title"><span class="icon">🕒</span> Match History</h2>
+            <span class="panel-badge" id="histBadgeCount">0 logs</span>
+          </div>
+
+          <div class="history-list" id="matchHistoryList">
+            <!-- Populated dynamically -->
+          </div>
+
+          <div style="margin-top: 12px; display: flex; justify-content: flex-end;">
+            <button class="btn btn-sm" id="clearAllHistoryBtn" style="color: var(--danger-red); border-color: rgba(239, 68, 68, 0.3);">
+              <span>🗑</span> Clear History
+            </button>
+          </div>
+        </div>
+
+        <!-- CARD 3: QUICK SHORTCUTS & DATA EXPORT -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <h2 class="panel-title"><span class="icon">🛠</span> Quick Actions</h2>
+          </div>
+
+          <div class="shortcuts-grid">
+            <button class="btn btn-sm" id="quickAddSquadBtn">
+              <span>➕</span> Add Squad
+            </button>
+            <button class="btn btn-sm" id="exportCsvBtn">
+              <span>📊</span> Export CSV
+            </button>
+            <button class="btn btn-sm" id="backupJsonBtn">
+              <span>💾</span> Backup JSON
+            </button>
+            <button class="btn btn-sm" id="restoreJsonBtn">
+              <span>📂</span> Restore JSON
+            </button>
+          </div>
+          <input type="file" id="jsonFileInput" accept=".json" style="display: none;">
+        </div>
+
+      </aside>
+
+    </main>
+
+  </div>
+
+  <!-- ==========================================================================
+       MODALS
+       ========================================================================== -->
+
+  <!-- 1. SETTINGS MODAL -->
+  <div class="modal-backdrop" id="settingsModalBackdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">⚙ Tournament Settings</h3>
+        <button class="modal-close-btn" onclick="UI.closeModal('settingsModalBackdrop')">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Brand / Organization Name</label>
+          <input type="text" class="form-control" id="setOrgName">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tournament Title</label>
+          <input type="text" class="form-control" id="setTournTitle">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Standings Subtitle</label>
+          <input type="text" class="form-control" id="setTournSubtitle">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Match Info Line</label>
+          <input type="text" class="form-control" id="setMatchInfo">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Footer Powered-By Text</label>
+          <input type="text" class="form-control" id="setFooterText">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Organization Logo (URL or Initials)</label>
+          <input type="text" class="form-control" id="setLogoVal" placeholder="e.g. WZ or https://image-url.png">
+        </div>
+
+        <div style="margin-top: 8px;">
+          <button type="button" class="btn btn-sm" style="color: var(--danger-red); border-color: rgba(239, 68, 68, 0.3);" id="resetDefaultsBtn">
+            <span>⚠️</span> Reset All Data to Default
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-sm" onclick="UI.closeModal('settingsModalBackdrop')">Cancel</button>
+        <button class="btn btn-sm btn-coral" id="saveSettingsBtn">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. EDIT SQUAD & ROSTER MODAL -->
+  <div class="modal-backdrop" id="squadModalBackdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title" id="squadModalTitle">✏️ Edit Squad & Roster</h3>
+        <button class="modal-close-btn" onclick="UI.closeModal('squadModalBackdrop')">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="editSquadId">
+
+        <div class="form-group">
+          <label class="form-label">Squad / Team Name</label>
+          <input type="text" class="form-control" id="editSquadName" placeholder="Enter squad name">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Logo Monogram / Initials (2-4 letters)</label>
+          <input type="text" class="form-control" id="editSquadLogo" placeholder="e.g. OL, ZG, FLW">
+        </div>
+
+        <div style="border-top: 1px solid var(--card-border); padding-top: 12px; margin-top: 4px;">
+          <label class="form-label" style="margin-bottom: 8px;">👥 Squad Roster (4 Players)</label>
+          
+          <div class="form-group">
+            <input type="text" class="form-control" id="rosterP1" placeholder="Player 1 (e.g. IGL / Captain)">
+          </div>
+          <div class="form-group">
+            <input type="text" class="form-control" id="rosterP2" placeholder="Player 2 (e.g. Assaulter)">
+          </div>
+          <div class="form-group">
+            <input type="text" class="form-control" id="rosterP3" placeholder="Player 3 (e.g. Sniper)">
+          </div>
+          <div class="form-group">
+            <input type="text" class="form-control" id="rosterP4" placeholder="Player 4 (e.g. Support)">
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-sm" onclick="UI.closeModal('squadModalBackdrop')">Cancel</button>
+        <button class="btn btn-sm btn-coral" id="saveSquadBtn">Save Squad</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ==========================================================================
+       JAVASCRIPT APPLICATION CORE
+       ========================================================================== -->
+  <script>
+    /**
+     * SQUAD POINT TABLE & TOURNAMENT STANDINGS MANAGER
+     * Self-contained, persistent, responsive Esports application
+     */
+
+    // --- DEFAULT TOURNAMENT STATE & REFERENCE DATA ---
+    const DEFAULT_POINT_MATRIX = {
+      1: 12, // 1st Place (Booyah / WWCD)
+      2: 9,  // 2nd Place
+      3: 8,  // 3rd Place
+      4: 7,  // 4th Place
+      5: 6,  // 5th Place
+      6: 5,  // 6th Place
+      7: 4,  // 7th Place
+      8: 3,  // 8th Place
+      9: 2,  // 9th Place
+      10: 1, // 10th Place
+      11: 0,
+      12: 0,
+      13: 0,
+      14: 0,
+      15: 0,
+      16: 0
+    };
+
+    const DEFAULT_SQUADS_A = [
+      { id: 'sq_1',  name: 'OutLaw',           logo: 'OL',  matches: 6, wins: 2, posPts: 50, killPts: 120, total: 170, roster: ['OutLaw_King', 'OutLaw_Viper', 'OutLaw_Zeus', 'OutLaw_Ghost'] },
+      { id: 'sq_2',  name: 'ZERO GRAVITY xNS', logo: 'ZG',  matches: 5, wins: 2, posPts: 37, killPts: 73,  total: 110, roster: ['ZG_Ragnar', 'ZG_Kage', 'ZG_Nova', 'ZG_Venom'] },
+      { id: 'sq_3',  name: 'FLAWLESS',         logo: 'FLW', matches: 6, wins: 1, posPts: 46, killPts: 57,  total: 103, roster: ['FLW_Ace', 'FLW_Demon', 'FLW_Sniper', 'FLW_Reaper'] },
+      { id: 'sq_4',  name: 'VEXARCH',          logo: 'VEX', matches: 6, wins: 0, posPts: 37, killPts: 31,  total: 68,  roster: ['VEX_Alpha', 'VEX_Ronin', 'VEX_Blaze', 'VEX_Storm'] },
+      { id: 'sq_5',  name: 'WARBORN OFFICIAL', logo: 'WB',  matches: 6, wins: 1, posPts: 33, killPts: 31,  total: 64,  roster: ['WB_Warlord', 'WB_Striker', 'WB_Titan', 'WB_Echo'] },
+      { id: 'sq_6',  name: 'MYSTIC WOLVES',    logo: 'MW',  matches: 6, wins: 1, posPts: 26, killPts: 37,  total: 63,  roster: ['MW_Wolfy', 'MW_Claw', 'MW_Fang', 'MW_Howler'] },
+      { id: 'sq_7',  name: 'ESS 11',           logo: 'ESS', matches: 6, wins: 0, posPts: 25, killPts: 32,  total: 57,  roster: ['ESS_Eleven', 'ESS_Matrix', 'ESS_Chaos', 'ESS_Frost'] },
+      { id: 'sq_8',  name: 'DIVINE CORPSE',    logo: 'DC',  matches: 6, wins: 0, posPts: 25, killPts: 31,  total: 56,  roster: ['DC_Immortal', 'DC_Revenant', 'DC_Phantom', 'DC_Specter'] },
+      { id: 'sq_9',  name: 'UNO REVERSE',      logo: 'UNO', matches: 5, wins: 0, posPts: 16, killPts: 29,  total: 45,  roster: ['UNO_Card', 'UNO_Wild', 'UNO_Skip', 'UNO_Draw4'] },
+      { id: 'sq_10', name: 'CHOSEN ONES',      logo: 'CO',  matches: 6, wins: 0, posPts: 17, killPts: 20,  total: 37,  roster: ['CO_Neo', 'CO_Morpheus', 'CO_Trinity', 'CO_Oracle'] },
+      { id: 'sq_11', name: 'NO SKILL',         logo: 'NS',  matches: 6, wins: 0, posPts: 23, killPts: 13,  total: 36,  roster: ['NS_Lucky', 'NS_NoobMaster', 'NS_Clutch', 'NS_RNG'] },
+      { id: 'sq_12', name: 'ZERO LIMIT',       logo: 'ZL',  matches: 3, wins: 0, posPts: 8,  killPts: 3,   total: 11,  roster: ['ZL_Infinity', 'ZL_Apex', 'ZL_Surge', 'ZL_Pulse'] }
+    ];
+
+    const DEFAULT_APP_STATE = {
+      tournament: {
+        orgName: 'WARZONE OFFICIAL',
+        tournTitle: 'DAILY PAID SCRIM',
+        tournSubtitle: 'OVERALL STANDINGS',
+        matchInfo: 'WEEK 01 DAY 01',
+        footerText: 'Powered by WARZONE OFFICIAL',
+        logoVal: 'WZ'
+      },
+      scoring: DEFAULT_POINT_MATRIX,
+      activeGroupId: 'grp_a',
+      groups: [
+        { id: 'grp_a', name: 'GROUP A' },
+        { id: 'grp_b', name: 'GROUP B' },
+        { id: 'grp_c', name: 'GROUP C' },
+        { id: 'grp_d', name: 'GROUP D' }
+      ],
+      squads: {
+        'grp_a': DEFAULT_SQUADS_A,
+        'grp_b': [],
+        'grp_c': [],
+        'grp_d': []
+      },
+      matchHistory: [
+        { id: 'mh_1', groupId: 'grp_a', matchNo: 1, teamId: 'sq_1', teamName: 'OutLaw', pos: 1, posPts: 12, killPts: 20, total: 32, isWin: true, time: 'Match 1' },
+        { id: 'mh_2', groupId: 'grp_a', matchNo: 1, teamId: 'sq_2', teamName: 'ZERO GRAVITY xNS', pos: 2, posPts: 9, killPts: 15, total: 24, isWin: false, time: 'Match 1' }
+      ],
+      ui: {
+        editMode: false,
+        showRosters: false,
+        searchQuery: ''
+      }
+    };
+
+    // --- APPLICATION STATE MANAGER ---
+    const AppState = {
+      data: null,
+      storageKey: 'warzone_standings_db_v3',
+
+      init() {
+        try {
+          const saved = localStorage.getItem(this.storageKey);
+          if (saved) {
+            this.data = JSON.parse(saved);
+            // Verify structure
+            if (!this.data.squads || !this.data.tournament) {
+              this.resetToDefaults();
+            }
+          } else {
+            this.resetToDefaults();
+          }
+        } catch (e) {
+          console.warn('Storage read error, using defaults:', e);
+          this.resetToDefaults();
+        }
+      },
+
+      save() {
+        try {
+          localStorage.setItem(this.storageKey, JSON.stringify(this.data));
+        } catch (e) {
+          console.error('Failed to save to localStorage:', e);
+        }
+      },
+
+      resetToDefaults() {
+        this.data = JSON.parse(JSON.stringify(DEFAULT_APP_STATE));
+        this.save();
+      },
+
+      getActiveSquads() {
+        if (!this.data.squads[this.data.activeGroupId]) {
+          this.data.squads[this.data.activeGroupId] = [];
+        }
+        return this.data.squads[this.data.activeGroupId];
+      },
+
+      getActiveGroup() {
+        return this.data.groups.find(g => g.id === this.data.activeGroupId) || this.data.groups[0];
+      }
+    };
+
+    // --- SOUND FX (Web Audio API Synthesizer) ---
+    const SoundFX = {
+      ctx: null,
+      init() {
+        if (!this.ctx && (window.AudioContext || window.webkitAudioContext)) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      },
+      playTone(freq, type = 'sine', duration = 0.15, gainVal = 0.1) {
+        try {
+          this.init();
+          if (!this.ctx) return;
+          if (this.ctx.state === 'suspended') this.ctx.resume();
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch (e) {}
+      },
+      save() {
+        this.playTone(587.33, 'triangle', 0.1, 0.12);
+        setTimeout(() => this.playTone(880, 'triangle', 0.2, 0.15), 100);
+      },
+      undo() {
+        this.playTone(440, 'sine', 0.12, 0.1);
+        setTimeout(() => this.playTone(330, 'sine', 0.18, 0.1), 100);
+      }
+    };
+
+    // --- TOAST NOTIFICATIONS ---
+    const Toast = {
+      show(message, icon = '✅') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = 'toast-msg';
+        toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(10px)';
+          setTimeout(() => toast.remove(), 400);
+        }, 3200);
+      }
+    };
+
+    // --- UI RENDERER & INTERACTION CONTROLLER ---
+    const UI = {
+      init() {
+        this.bindEvents();
+        this.renderAll();
+      },
+
+      bindEvents() {
+        // Edit Mode Toggle
+        document.getElementById('editModeToggleBtn').addEventListener('click', () => {
+          AppState.data.ui.editMode = !AppState.data.ui.editMode;
+          AppState.save();
+          this.updateEditModeUI();
+          this.renderStandings();
+        });
+
+        // Show Rosters Toggle
+        document.getElementById('showRostersToggleBtn').addEventListener('click', () => {
+          AppState.data.ui.showRosters = !AppState.data.ui.showRosters;
+          AppState.save();
+          this.updateRosterToggleUI();
+          this.renderStandings();
+        });
+
+        // Share Button (Formatted Text Summary)
+        document.getElementById('shareStandingsBtn').addEventListener('click', () => {
+          this.shareStandings();
+        });
+
+        // Settings Modal Open/Save
+        document.getElementById('openSettingsModalBtn').addEventListener('click', () => {
+          this.openSettingsModal();
+        });
+        document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+          this.saveSettings();
+        });
+        document.getElementById('resetDefaultsBtn').addEventListener('click', () => {
+          if (confirm('Are you sure you want to reset all tournament standings and settings back to factory defaults?')) {
+            AppState.resetToDefaults();
+            this.renderAll();
+            this.closeModal('settingsModalBackdrop');
+            Toast.show('All data reset to factory default.', '🔄');
+          }
+        });
+
+        // Fullscreen Toggle
+        document.getElementById('fullscreenToggleBtn').addEventListener('click', () => {
+          if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => {});
+          } else {
+            document.exitFullscreen().catch(() => {});
+          }
+        });
+
+        // High-Res PNG Download
+        document.getElementById('downloadPngBtn').addEventListener('click', () => {
+          this.exportPNG();
+        });
+
+        // Search Squads Input
+        document.getElementById('squadSearchInput').addEventListener('input', (e) => {
+          AppState.data.ui.searchQuery = e.target.value.toLowerCase().trim();
+          this.renderStandings();
+        });
+
+        // Auto-Rank Button
+        document.getElementById('sortRankingBtn').addEventListener('click', () => {
+          this.sortStandings();
+          this.renderStandings();
+          Toast.show('Standings auto-ranked by points and wins!', '⚡');
+        });
+
+        // Add Squad Buttons
+        document.getElementById('addNewSquadBtn').addEventListener('click', () => this.openAddSquadModal());
+        document.getElementById('quickAddSquadBtn').addEventListener('click', () => this.openAddSquadModal());
+        document.getElementById('saveSquadBtn').addEventListener('click', () => this.saveSquadModal());
+
+        // Quick Point Update Form Interactions
+        const posSelect = document.getElementById('formPositionSelect');
+        posSelect.addEventListener('change', () => {
+          const pos = parseInt(posSelect.value, 10);
+          const pts = AppState.data.scoring[pos] !== undefined ? AppState.data.scoring[pos] : 0;
+          document.getElementById('formPositionPoints').value = pts;
+          document.getElementById('formWinCheck').checked = (pos === 1);
+        });
+
+        document.getElementById('saveMatchResultBtn').addEventListener('click', () => this.saveQuickMatchResult());
+        document.getElementById('resetFormBtn').addEventListener('click', () => this.resetQuickForm());
+        document.getElementById('undoLastUpdateBtn').addEventListener('click', () => this.undoLastMatchUpdate());
+        document.getElementById('clearAllHistoryBtn').addEventListener('click', () => this.clearAllHistory());
+
+        // Quick Action Exports
+        document.getElementById('exportCsvBtn').addEventListener('click', () => this.exportCSV());
+        document.getElementById('backupJsonBtn').addEventListener('click', () => this.backupJSON());
+        document.getElementById('restoreJsonBtn').addEventListener('click', () => {
+          document.getElementById('jsonFileInput').click();
+        });
+        document.getElementById('jsonFileInput').addEventListener('change', (e) => this.handleRestoreJSON(e));
+      },
+
+      renderAll() {
+        this.updateHeaderBranding();
+        this.renderGroupTabs();
+        this.populateQuickUpdateDropdowns();
+        this.updateEditModeUI();
+        this.updateRosterToggleUI();
+        this.renderStandings();
+        this.renderMatchHistory();
+      },
+
+      updateHeaderBranding() {
+        const t = AppState.data.tournament;
+        document.getElementById('boardOrgName').textContent = t.orgName || 'WARZONE OFFICIAL';
+        document.getElementById('boardTournTitle').textContent = t.tournTitle || 'DAILY PAID SCRIM';
+        document.getElementById('boardTournSubtitle').textContent = t.tournSubtitle || 'OVERALL STANDINGS';
+        document.getElementById('boardMatchInfo').textContent = t.matchInfo || 'WEEK 01 DAY 01';
+        document.getElementById('boardFooterText').textContent = t.footerText || 'Powered by WARZONE OFFICIAL';
+
+        const logoEl = document.getElementById('boardOrgLogo');
+        if (t.logoVal && t.logoVal.startsWith('http')) {
+          logoEl.innerHTML = `<img src="${t.logoVal}" alt="Logo">`;
+        } else {
+          logoEl.textContent = t.logoVal || 'WZ';
+        }
+
+        const activeGroup = AppState.getActiveGroup();
+        document.getElementById('boardGroupPill').textContent = activeGroup.name;
+        document.getElementById('boardFooterMeta').textContent = `Official Battle Royale Scoring • ${AppState.getActiveSquads().length} Squads`;
+        document.getElementById('teamCountBadge').textContent = `${AppState.getActiveSquads().length} Squads Registered`;
+      },
+
+      renderGroupTabs() {
+        const container = document.getElementById('groupTabsContainer');
+        container.innerHTML = '';
+
+        AppState.data.groups.forEach(group => {
+          const btn = document.createElement('button');
+          btn.className = `group-tab-btn ${group.id === AppState.data.activeGroupId ? 'active' : ''}`;
+          btn.textContent = group.name;
+          btn.addEventListener('click', () => {
+            AppState.data.activeGroupId = group.id;
+            AppState.save();
+            this.updateHeaderBranding();
+            this.renderGroupTabs();
+            this.populateQuickUpdateDropdowns();
+            this.renderStandings();
+            this.renderMatchHistory();
+          });
+          container.appendChild(btn);
+        });
+
+        // + Add Group Button
+        const addBtn = document.createElement('button');
+        addBtn.className = 'group-tab-btn add-group-btn';
+        addBtn.innerHTML = '+ Add Group';
+        addBtn.addEventListener('click', () => {
+          const nextIndex = AppState.data.groups.length + 1;
+          const letter = String.fromCharCode(64 + nextIndex);
+          const name = prompt('Enter new Tournament Group Name:', `GROUP ${letter}`);
+          if (name && name.trim()) {
+            const newId = 'grp_' + Date.now();
+            AppState.data.groups.push({ id: newId, name: name.trim().toUpperCase() });
+            AppState.data.squads[newId] = [];
+            AppState.data.activeGroupId = newId;
+            AppState.save();
+            this.renderAll();
+            Toast.show(`Created ${name.trim().toUpperCase()}!`, '✨');
+          }
+        });
+        container.appendChild(addBtn);
+      },
+
+      updateEditModeUI() {
+        const isEdit = AppState.data.ui.editMode;
+        const toggleBtn = document.getElementById('editModeToggleBtn');
+        const label = document.getElementById('editModeLabel');
+        const addBtn = document.getElementById('addNewSquadBtn');
+        const thActions = document.getElementById('thActionsCol');
+
+        if (isEdit) {
+          toggleBtn.classList.add('active');
+          label.textContent = 'Edit Mode: ON';
+          addBtn.style.display = 'inline-flex';
+          thActions.style.display = 'table-cell';
+        } else {
+          toggleBtn.classList.remove('active');
+          label.textContent = 'Edit Mode: OFF';
+          addBtn.style.display = 'none';
+          thActions.style.display = 'none';
+        }
+      },
+
+      updateRosterToggleUI() {
+        const isShow = AppState.data.ui.showRosters;
+        const btn = document.getElementById('showRostersToggleBtn');
+        const text = document.getElementById('rosterToggleText');
+        if (isShow) {
+          btn.classList.add('btn-gold');
+          text.textContent = 'Show Rosters: ON';
+        } else {
+          btn.classList.remove('btn-gold');
+          text.textContent = 'Show Rosters: OFF';
+        }
+      },
+
+      sortStandings() {
+        const squads = AppState.getActiveSquads();
+        squads.sort((a, b) => {
+          if (b.total !== a.total) return b.total - a.total; // Tiebreaker 1: Total Points
+          if (b.wins !== a.wins) return b.wins - a.wins;     // Tiebreaker 2: Wins (Booyahs)
+          if (b.posPts !== a.posPts) return b.posPts - a.posPts; // Tiebreaker 3: Placement Points
+          return b.killPts - a.killPts; // Tiebreaker 4: Kills
+        });
+        AppState.save();
+      },
+
+      renderStandings() {
+        const tbody = document.getElementById('standingsTableBody');
+        tbody.innerHTML = '';
+
+        const squads = AppState.getActiveSquads();
+        const query = AppState.data.ui.searchQuery;
+        const isEdit = AppState.data.ui.editMode;
+        const isShowRoster = AppState.data.ui.showRosters;
+
+        const filtered = squads.filter(sq => {
+          if (!query) return true;
+          return sq.name.toLowerCase().includes(query) || 
+                 (sq.roster && sq.roster.some(p => p.toLowerCase().includes(query)));
+        });
+
+        if (filtered.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="${isEdit ? 8 : 7}" style="text-align: center; padding: 40px; color: var(--text-dim);">
+                <div style="font-size: 32px; margin-bottom: 8px;">🛡️</div>
+                <div style="font-family: var(--font-stats); font-size: 16px; font-weight: 700;">No squads found</div>
+                <div style="font-size: 12px; margin-top: 4px;">Click "+ Add Squad" to register teams for this group.</div>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        filtered.forEach((sq, idx) => {
+          const rank = idx + 1;
+          const tr = document.createElement('tr');
+          tr.className = `squad-row ${rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : ''}`;
+
+          let rankBadgeContent = rank;
+          if (rank === 1) rankBadgeContent = '🏆';
+          else if (rank === 2) rankBadgeContent = '🥈';
+          else if (rank === 3) rankBadgeContent = '🥉';
+
+          const winBadge = sq.wins > 0 ? `<span class="booyah-star" title="${sq.wins} Booyah(s)">★ ${sq.wins}</span>` : '';
+
+          tr.innerHTML = `
+            <td>
+              <span class="rank-badge">${rankBadgeContent}</span>
+            </td>
+            <td>
+              <div class="team-cell">
+                <div class="team-logo-box">${sq.logo || sq.name.substring(0, 2).toUpperCase()}</div>
+                <div class="team-details">
+                  <div class="team-name-text">
+                    ${sq.name}
+                    ${winBadge}
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td><span class="stat-val">${sq.matches || 0}</span></td>
+            <td><span class="stat-val win-val">${sq.wins || 0}</span></td>
+            <td><span class="stat-val pos-val">${sq.posPts || 0}</span></td>
+            <td><span class="stat-val kill-val">${sq.killPts || 0}</span></td>
+            <td>
+              <span class="total-pill">${sq.total || 0} PTS</span>
+            </td>
+            ${isEdit ? `
+              <td>
+                <div class="edit-controls-cell">
+                  <button class="action-icon-btn" title="Edit squad & roster" onclick="UI.openEditSquadModal('${sq.id}')">✏️</button>
+                  <button class="action-icon-btn btn-delete" title="Delete squad" onclick="UI.deleteSquad('${sq.id}')">🗑️</button>
+                </div>
+              </td>
+            ` : ''}
+          `;
+
+          tbody.appendChild(tr);
+
+          // Roster Sub-Row (Rendered if Show Rosters is enabled)
+          if (isShowRoster) {
+            const rosterTr = document.createElement('tr');
+            rosterTr.className = 'roster-row';
+            const rosterList = (sq.roster && sq.roster.length > 0) 
+              ? sq.roster 
+              : [`${sq.name}_P1`, `${sq.name}_P2`, `${sq.name}_P3`, `${sq.name}_P4`];
+
+            const chipsHtml = rosterList.map(player => `
+              <span class="roster-chip" ${isEdit ? `onclick="UI.openEditSquadModal('${sq.id}')" style="cursor:pointer;"` : ''}>
+                <span class="roster-chip-icon">👤</span> ${player}
+              </span>
+            `).join('');
+
+            rosterTr.innerHTML = `
+              <td colspan="${isEdit ? 8 : 7}">
+                <div class="roster-chips-wrap">
+                  <span style="font-family: var(--font-stats); font-size: 11px; font-weight:700; color: var(--gold); letter-spacing:0.5px; text-transform:uppercase; margin-right:4px;">Roster:</span>
+                  ${chipsHtml}
+                </div>
+              </td>
+            `;
+            tbody.appendChild(rosterTr);
+          }
+        });
+      },
+
+      populateQuickUpdateDropdowns() {
+        // Group Select in Sidebar Form
+        const groupSelect = document.getElementById('formGroupSelect');
+        groupSelect.innerHTML = '';
+        AppState.data.groups.forEach(g => {
+          const opt = document.createElement('option');
+          opt.value = g.id;
+          opt.textContent = g.name;
+          if (g.id === AppState.data.activeGroupId) opt.selected = true;
+          groupSelect.appendChild(opt);
+        });
+
+        groupSelect.onchange = (e) => {
+          AppState.data.activeGroupId = e.target.value;
+          AppState.save();
+          this.renderAll();
+        };
+
+        // Squad Select in Sidebar Form
+        const teamSelect = document.getElementById('formTeamSelect');
+        teamSelect.innerHTML = '';
+        const squads = AppState.getActiveSquads();
+        squads.forEach(sq => {
+          const opt = document.createElement('option');
+          opt.value = sq.id;
+          opt.textContent = `${sq.name} (${sq.total} pts)`;
+          teamSelect.appendChild(opt);
+        });
+
+        // Finish Position Dropdown (Positions 1 to 16)
+        const posSelect = document.getElementById('formPositionSelect');
+        posSelect.innerHTML = '';
+        for (let i = 1; i <= 16; i++) {
+          const opt = document.createElement('option');
+          opt.value = i;
+          const pts = AppState.data.scoring[i] !== undefined ? AppState.data.scoring[i] : 0;
+          opt.textContent = `${i}${this.getOrdinal(i)} Place (${pts} pts)${i === 1 ? ' 🏆 Booyah' : ''}`;
+          posSelect.appendChild(opt);
+        }
+
+        // Set default position points based on 1st place
+        document.getElementById('formPositionPoints').value = AppState.data.scoring[1] || 12;
+        document.getElementById('formWinCheck').checked = true;
+      },
+
+      getOrdinal(n) {
+        const s = ["th", "st", "nd", "rd"];
+        const v = n % 100;
+        return s[(v - 20) % 10] || s[v] || s[0];
+      },
+
+      saveQuickMatchResult() {
+        const teamSelect = document.getElementById('formTeamSelect');
+        const squadId = teamSelect.value;
+        if (!squadId) {
+          alert('Please select a squad first!');
+          return;
+        }
+
+        const matchNo = parseInt(document.getElementById('formMatchNumber').value, 10) || 1;
+        const pos = parseInt(document.getElementById('formPositionSelect').value, 10) || 1;
+        const posPts = parseInt(document.getElementById('formPositionPoints').value, 10) || 0;
+        const killPts = parseInt(document.getElementById('formKillPoints').value, 10) || 0;
+        const isWin = document.getElementById('formWinCheck').checked;
+        const matchTotal = posPts + killPts;
+
+        const squads = AppState.getActiveSquads();
+        const squad = squads.find(s => s.id === squadId);
+        if (!squad) return;
+
+        // Apply scores to squad
+        squad.matches = (squad.matches || 0) + 1;
+        if (isWin) squad.wins = (squad.wins || 0) + 1;
+        squad.posPts = (squad.posPts || 0) + posPts;
+        squad.killPts = (squad.killPts || 0) + killPts;
+        squad.total = (squad.posPts || 0) + (squad.killPts || 0);
+
+        // Record in Match History
+        const record = {
+          id: 'mh_' + Date.now(),
+          groupId: AppState.data.activeGroupId,
+          matchNo: matchNo,
+          teamId: squad.id,
+          teamName: squad.name,
+          pos: pos,
+          posPts: posPts,
+          killPts: killPts,
+          total: matchTotal,
+          isWin: isWin,
+          time: `Match ${matchNo}`
+        };
+        AppState.data.matchHistory.unshift(record);
+
+        // Sort & Save
+        this.sortStandings();
+        AppState.save();
+
+        // Sound & Notification
+        SoundFX.save();
+        Toast.show(`Match #${matchNo} saved: ${squad.name} (+${matchTotal} PTS)`, isWin ? '🏆' : '⚡');
+
+        // Refresh UI
+        this.renderStandings();
+        this.renderMatchHistory();
+        this.populateQuickUpdateDropdowns();
+
+        // Auto increment match number
+        document.getElementById('formMatchNumber').value = matchNo + 1;
+        document.getElementById('formKillPoints').value = '';
+      },
+
+      resetQuickForm() {
+        document.getElementById('formKillPoints').value = '';
+        document.getElementById('formPositionSelect').value = 1;
+        document.getElementById('formPositionPoints').value = AppState.data.scoring[1] || 12;
+        document.getElementById('formWinCheck').checked = true;
+        Toast.show('Form reset', '↺');
+      },
+
+      undoLastMatchUpdate() {
+        if (!AppState.data.matchHistory || AppState.data.matchHistory.length === 0) {
+          Toast.show('No match entries to undo!', 'ℹ️');
+          return;
+        }
+
+        const latest = AppState.data.matchHistory.shift();
+        const squadList = AppState.data.squads[latest.groupId] || [];
+        const squad = squadList.find(s => s.id === latest.teamId);
+
+        if (squad) {
+          squad.matches = Math.max(0, (squad.matches || 1) - 1);
+          if (latest.isWin) squad.wins = Math.max(0, (squad.wins || 1) - 1);
+          squad.posPts = Math.max(0, (squad.posPts || 0) - latest.posPts);
+          squad.killPts = Math.max(0, (squad.killPts || 0) - latest.killPts);
+          squad.total = squad.posPts + squad.killPts;
+        }
+
+        this.sortStandings();
+        AppState.save();
+
+        SoundFX.undo();
+        Toast.show(`Undid Match #${latest.matchNo} for ${latest.teamName}`, '↩');
+
+        this.renderStandings();
+        this.renderMatchHistory();
+        this.populateQuickUpdateDropdowns();
+      },
+
+      deleteHistoryRecord(id) {
+        const idx = AppState.data.matchHistory.findIndex(h => h.id === id);
+        if (idx === -1) return;
+
+        const record = AppState.data.matchHistory[idx];
+        if (confirm(`Delete this match record for ${record.teamName}? Points will be deducted from team total.`)) {
+          const squadList = AppState.data.squads[record.groupId] || [];
+          const squad = squadList.find(s => s.id === record.teamId);
+          if (squad) {
+            squad.matches = Math.max(0, (squad.matches || 1) - 1);
+            if (record.isWin) squad.wins = Math.max(0, (squad.wins || 1) - 1);
+            squad.posPts = Math.max(0, (squad.posPts || 0) - record.posPts);
+            squad.killPts = Math.max(0, (squad.killPts || 0) - record.killPts);
+            squad.total = squad.posPts + squad.killPts;
+          }
+          AppState.data.matchHistory.splice(idx, 1);
+          this.sortStandings();
+          AppState.save();
+
+          SoundFX.undo();
+          Toast.show('Match record deleted and stats rolled back.', '🗑️');
+          this.renderStandings();
+          this.renderMatchHistory();
+          this.populateQuickUpdateDropdowns();
+        }
+      },
+
+      clearAllHistory() {
+        if (confirm('Clear all match history logs? (Team points on the leaderboard will remain intact).')) {
+          AppState.data.matchHistory = [];
+          AppState.save();
+          this.renderMatchHistory();
+          Toast.show('Match history cleared.', '🗑️');
+        }
+      },
+
+      renderMatchHistory() {
+        const container = document.getElementById('matchHistoryList');
+        const badge = document.getElementById('histBadgeCount');
+        const history = AppState.data.matchHistory || [];
+        
+        badge.textContent = `${history.length} logs`;
+        container.innerHTML = '';
+
+        if (history.length === 0) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 24px; color: var(--text-dim); font-size: 13px;">
+              No match results logged yet.
+            </div>
+          `;
+          return;
+        }
+
+        history.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'history-item';
+          div.innerHTML = `
+            <div>
+              <div class="hist-team">${item.teamName} ${item.isWin ? '🏆' : ''}</div>
+              <div class="hist-meta">
+                <span class="hist-badge">#${item.pos}</span>
+                <span>${item.time}</span>
+                <span>•</span>
+                <span>Kills: ${item.killPts}</span>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="hist-pts">+${item.total}</span>
+              <button class="action-icon-btn btn-delete" style="width: 24px; height: 24px; font-size: 10px;" onclick="UI.deleteHistoryRecord('${item.id}')" title="Delete record">✕</button>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      },
+
+      // --- SQUAD ADD / EDIT MODAL ---
+      openAddSquadModal() {
+        document.getElementById('squadModalTitle').textContent = '➕ Add New Squad';
+        document.getElementById('editSquadId').value = '';
+        document.getElementById('editSquadName').value = '';
+        document.getElementById('editSquadLogo').value = '';
+        document.getElementById('rosterP1').value = '';
+        document.getElementById('rosterP2').value = '';
+        document.getElementById('rosterP3').value = '';
+        document.getElementById('rosterP4').value = '';
+        this.openModal('squadModalBackdrop');
+      },
+
+      openEditSquadModal(squadId) {
+        const squads = AppState.getActiveSquads();
+        const sq = squads.find(s => s.id === squadId);
+        if (!sq) return;
+
+        document.getElementById('squadModalTitle').textContent = '✏️ Edit Squad & Roster';
+        document.getElementById('editSquadId').value = sq.id;
+        document.getElementById('editSquadName').value = sq.name;
+        document.getElementById('editSquadLogo').value = sq.logo || '';
+        
+        const r = sq.roster || [];
+        document.getElementById('rosterP1').value = r[0] || `${sq.name}_P1`;
+        document.getElementById('rosterP2').value = r[1] || `${sq.name}_P2`;
+        document.getElementById('rosterP3').value = r[2] || `${sq.name}_P3`;
+        document.getElementById('rosterP4').value = r[3] || `${sq.name}_P4`;
+
+        this.openModal('squadModalBackdrop');
+      },
+
+      saveSquadModal() {
+        const id = document.getElementById('editSquadId').value;
+        const name = document.getElementById('editSquadName').value.trim();
+        const logo = document.getElementById('editSquadLogo').value.trim() || name.substring(0, 3).toUpperCase();
+        
+        if (!name) {
+          alert('Squad name cannot be blank!');
+          return;
+        }
+
+        const roster = [
+          document.getElementById('rosterP1').value.trim() || `${name}_P1`,
+          document.getElementById('rosterP2').value.trim() || `${name}_P2`,
+          document.getElementById('rosterP3').value.trim() || `${name}_P3`,
+          document.getElementById('rosterP4').value.trim() || `${name}_P4`
+        ];
+
+        const squads = AppState.getActiveSquads();
+
+        if (id) {
+          // Edit existing squad
+          const sq = squads.find(s => s.id === id);
+          if (sq) {
+            sq.name = name;
+            sq.logo = logo;
+            sq.roster = roster;
+          }
+          Toast.show(`Squad "${name}" updated!`, '✏️');
+        } else {
+          // Create new squad
+          const newSquad = {
+            id: 'sq_' + Date.now(),
+            name: name,
+            logo: logo,
+            matches: 0,
+            wins: 0,
+            posPts: 0,
+            killPts: 0,
+            total: 0,
+            roster: roster
+          };
+          squads.push(newSquad);
+          Toast.show(`Squad "${name}" registered!`, '➕');
+        }
+
+        AppState.save();
+        this.closeModal('squadModalBackdrop');
+        this.renderStandings();
+        this.populateQuickUpdateDropdowns();
+        this.updateHeaderBranding();
+      },
+
+      deleteSquad(squadId) {
+        const squads = AppState.getActiveSquads();
+        const idx = squads.findIndex(s => s.id === squadId);
+        if (idx === -1) return;
+
+        const name = squads[idx].name;
+        if (confirm(`Are you sure you want to delete squad "${name}"?`)) {
+          squads.splice(idx, 1);
+          AppState.save();
+          Toast.show(`Squad "${name}" removed.`, '🗑️');
+          this.renderStandings();
+          this.populateQuickUpdateDropdowns();
+          this.updateHeaderBranding();
+        }
+      },
+
+      // --- SETTINGS MODAL ---
+      openSettingsModal() {
+        const t = AppState.data.tournament;
+        document.getElementById('setOrgName').value = t.orgName || '';
+        document.getElementById('setTournTitle').value = t.tournTitle || '';
+        document.getElementById('setTournSubtitle').value = t.tournSubtitle || '';
+        document.getElementById('setMatchInfo').value = t.matchInfo || '';
+        document.getElementById('setFooterText').value = t.footerText || '';
+        document.getElementById('setLogoVal').value = t.logoVal || '';
+        this.openModal('settingsModalBackdrop');
+      },
+
+      saveSettings() {
+        const t = AppState.data.tournament;
+        t.orgName = document.getElementById('setOrgName').value.trim() || 'WARZONE OFFICIAL';
+        t.tournTitle = document.getElementById('setTournTitle').value.trim() || 'DAILY PAID SCRIM';
+        t.tournSubtitle = document.getElementById('setTournSubtitle').value.trim() || 'OVERALL STANDINGS';
+        t.matchInfo = document.getElementById('setMatchInfo').value.trim() || 'WEEK 01 DAY 01';
+        t.footerText = document.getElementById('setFooterText').value.trim() || 'Powered by WARZONE OFFICIAL';
+        t.logoVal = document.getElementById('setLogoVal').value.trim() || 'WZ';
+
+        AppState.save();
+        this.closeModal('settingsModalBackdrop');
+        this.updateHeaderBranding();
+        Toast.show('Tournament settings updated!', '⚙️');
+      },
+
+      openModal(id) {
+        document.getElementById(id).classList.add('open');
+      },
+
+      closeModal(id) {
+        document.getElementById(id).classList.remove('open');
+      },
+
+      // --- EXPORT & SHARE FUNCTIONS ---
+      shareStandings() {
+        const squads = AppState.getActiveSquads();
+        const activeGroup = AppState.getActiveGroup();
+        const t = AppState.data.tournament;
+
+        let text = `🏆 ${t.tournTitle} — ${t.tournSubtitle}\n`;
+        text += `📊 ${activeGroup.name} | ${t.matchInfo}\n`;
+        text += `═══════════════════════════════\n`;
+        text += `RK  TEAM NAME           M   W   PTS\n`;
+        text += `───────────────────────────────\n`;
+
+        squads.forEach((sq, i) => {
+          const rank = String(i + 1).padEnd(3, ' ');
+          const name = String(sq.name).substring(0, 18).padEnd(19, ' ');
+          const m = String(sq.matches).padStart(2, ' ');
+          const w = String(sq.wins).padStart(2, ' ');
+          const pts = String(sq.total).padStart(4, ' ');
+          text += `${rank} ${name} ${m}  ${w} ${pts} PTS\n`;
+        });
+
+        text += `═══════════════════════════════\n`;
+        text += `${t.footerText}\n`;
+
+        navigator.clipboard.writeText(text).then(() => {
+          Toast.show('📋 Standings summary copied to clipboard!', '📋');
+        }).catch(() => {
+          prompt('Copy Standings Text:', text);
+        });
+      },
+
+      exportPNG() {
+        const captureEl = document.getElementById('captureArea');
+        if (!captureEl) return;
+
+        const downloadBtn = document.getElementById('downloadPngBtn');
+        const origText = downloadBtn.innerHTML;
+        downloadBtn.innerHTML = '<span>⏳</span> Rendering...';
+        downloadBtn.style.pointerEvents = 'none';
+
+        Toast.show('Generating high-resolution PNG graphic...', '⏳');
+
+        // Execute html2canvas at 2.5x scale for razor-sharp social media banner quality
+        html2canvas(captureEl, {
+          scale: 2.5,
+          useCORS: true,
+          backgroundColor: '#0b0b0f',
+          logging: false
+        }).then(canvas => {
+          const link = document.createElement('a');
+          const groupName = AppState.getActiveGroup().name.replace(/\s+/g, '-');
+          link.download = `Standings-${groupName}-${Date.now()}.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+
+          downloadBtn.innerHTML = origText;
+          downloadBtn.style.pointerEvents = 'auto';
+          Toast.show('✅ PNG Downloaded Successfully!', '📥');
+        }).catch(err => {
+          console.error('PNG Export failed:', err);
+          downloadBtn.innerHTML = origText;
+          downloadBtn.style.pointerEvents = 'auto';
+          alert('Could not render image. Please try again.');
+        });
+      },
+
+      exportCSV() {
+        const squads = AppState.getActiveSquads();
+        const activeGroup = AppState.getActiveGroup();
+        let csv = 'Rank,Squad Name,Matches,Wins,Position Points,Kill Points,Total Points,Roster\n';
+
+        squads.forEach((sq, i) => {
+          const rosterStr = (sq.roster || []).join('; ');
+          csv += `${i + 1},"${sq.name}",${sq.matches || 0},${sq.wins || 0},${sq.posPts || 0},${sq.killPts || 0},${sq.total || 0},"${rosterStr}"\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `Standings-${activeGroup.name.replace(/\s+/g, '-')}.csv`;
+        link.click();
+        Toast.show('CSV File Exported!', '📊');
+      },
+
+      backupJSON() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(AppState.data, null, 2));
+        const link = document.createElement('a');
+        link.href = dataStr;
+        link.download = `Warzone-Tournament-Backup-${Date.now()}.json`;
+        link.click();
+        Toast.show('Tournament backup JSON saved!', '💾');
+      },
+
+      handleRestoreJSON(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const parsed = JSON.parse(e.target.result);
+            if (parsed.tournament && parsed.squads) {
+              AppState.data = parsed;
+              AppState.save();
+              this.renderAll();
+              Toast.show('Tournament restored successfully from JSON!', '📂');
+            } else {
+              alert('Invalid tournament backup file format.');
+            }
+          } catch (err) {
+            alert('Error parsing JSON backup file.');
+          }
+        };
+        reader.readAsText(file);
+      }
+    };
+
+    // --- INITIALIZE APPLICATION ON LOAD ---
+    document.addEventListener('DOMContentLoaded', () => {
+      AppState.init();
+      UI.init();
+    });
+  </script>
 </body>
 </html>
