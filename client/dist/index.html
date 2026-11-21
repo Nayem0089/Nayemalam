@@ -431,16 +431,16 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
-      margin-bottom: 6px;
+      gap: 14px;
+      margin-bottom: 8px;
     }
 
     .org-logo-slot {
-      width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
       border-radius: var(--radius-md);
       background: #181820;
-      border: 1px solid var(--card-border);
+      border: 1.5px solid var(--card-border);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -449,6 +449,16 @@
       font-weight: 700;
       color: var(--coral-red);
       overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      transition: var(--transition-fast);
+      flex-shrink: 0;
+    }
+
+    .org-logo-slot:hover {
+      border-color: var(--coral-red);
+      box-shadow: 0 0 14px rgba(255, 77, 77, 0.4);
+      transform: scale(1.04);
     }
 
     .org-logo-slot img {
@@ -457,13 +467,86 @@
       object-fit: contain;
     }
 
+    .org-name-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .org-name-text {
       font-family: var(--font-display);
-      font-size: 24px;
+      font-size: 28px;
       font-weight: 700;
       letter-spacing: 2px;
       color: var(--text-white);
       text-transform: uppercase;
+      cursor: pointer;
+      transition: color 0.15s ease;
+    }
+
+    .org-name-text:hover {
+      color: var(--coral-red);
+      text-decoration: underline dotted var(--coral-red);
+    }
+
+    .header-action-btns {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .header-action-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: var(--text-muted);
+      font-family: var(--font-stats);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.15s ease;
+    }
+
+    .header-action-btn:hover {
+      background: rgba(255, 77, 77, 0.2);
+      border-color: var(--coral-red);
+      color: var(--text-white);
+      transform: translateY(-1px);
+    }
+
+    .header-action-btn.btn-camera {
+      border-color: rgba(250, 204, 21, 0.35);
+      color: var(--gold);
+    }
+
+    .header-action-btn.btn-camera:hover {
+      background: rgba(250, 204, 21, 0.2);
+      border-color: var(--gold);
+      color: #fff;
+    }
+
+    /* Clean Export Rules - hide edit and upload buttons on PNG export */
+    .exporting-clean-png .header-action-btns,
+    .exporting-clean-png .header-action-btn {
+      display: none !important;
+    }
+
+    .exporting-clean-png .org-name-text {
+      cursor: default !important;
+      text-decoration: none !important;
+    }
+
+    .exporting-clean-png .org-logo-slot {
+      cursor: default !important;
+      border-color: var(--card-border) !important;
+      transform: none !important;
+      box-shadow: none !important;
     }
 
     .tourn-title-text {
@@ -1418,8 +1501,20 @@
           <!-- Tournament Header -->
           <header class="board-header">
             <div class="board-header-top">
-              <div class="org-logo-slot" id="boardOrgLogo">WZ</div>
-              <div class="org-name-text" id="boardOrgName">WARZONE OFFICIAL</div>
+              <!-- PNG Logo slot - Click to upload or change custom PNG logo anytime -->
+              <div class="org-logo-slot" id="boardOrgLogo" title="Click to upload custom PNG logo" onclick="UI.triggerOrgLogoUpload()">WZ</div>
+              
+              <div class="org-name-wrap">
+                <div class="org-name-text" id="boardOrgName" title="Click to change brand name" onclick="UI.openBrandModal()">WARZONE</div>
+                <div class="header-action-btns">
+                  <button type="button" class="header-action-btn" title="Change Brand Name" onclick="UI.openBrandModal()">
+                    <span>✏️</span> Edit Name
+                  </button>
+                  <button type="button" class="header-action-btn btn-camera" title="Upload PNG Logo" onclick="UI.triggerOrgLogoUpload()">
+                    <span>📷</span> PNG Logo
+                  </button>
+                </div>
+              </div>
             </div>
 
             <h1 class="tourn-title-text" id="boardTournTitle">DAILY PAID SCRIM</h1>
@@ -1725,8 +1820,13 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Organization Logo (URL or Initials)</label>
-          <input type="text" class="form-control" id="setLogoVal" placeholder="e.g. WZ or https://image-url.png">
+          <label class="form-label">Organization Logo (Initials or Custom PNG)</label>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" class="form-control" id="setLogoVal" placeholder="e.g. WZ or upload PNG">
+            <button type="button" class="btn btn-sm" onclick="UI.triggerOrgLogoUpload()" style="white-space: nowrap; border-color: var(--gold); color: var(--gold);">
+              📷 Upload PNG
+            </button>
+          </div>
         </div>
 
         <!-- Admin Password Change Section -->
@@ -1771,8 +1871,13 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Logo Monogram / Initials (2-4 letters)</label>
-          <input type="text" class="form-control" id="editSquadLogo" placeholder="e.g. OL, ZG, FLW">
+          <label class="form-label">Squad Logo (Initials or Custom PNG)</label>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" class="form-control" id="editSquadLogo" placeholder="e.g. OL or paste image URL">
+            <button type="button" class="btn btn-sm" onclick="document.getElementById('squadLogoFileInput').click()" style="white-space: nowrap; border-color: var(--gold); color: var(--gold);">
+              📷 Upload PNG
+            </button>
+          </div>
         </div>
 
         <div style="border-top: 1px solid var(--card-border); padding-top: 12px; margin-top: 4px;">
@@ -1797,6 +1902,52 @@
         <button class="btn btn-sm" onclick="UI.closeModal('squadModalBackdrop')">Cancel</button>
         <button class="btn btn-sm btn-coral" id="saveSquadBtn">Save Squad</button>
       </div>
+    </div>
+  </div>
+
+  <!-- 5. EDIT BRAND NAME & CUSTOM PNG LOGO MODAL -->
+  <div class="modal-backdrop" id="brandModalBackdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">✏️ Edit Brand Name & PNG Logo</h3>
+        <button class="modal-close-btn" onclick="UI.closeModal('brandModalBackdrop')">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Tournament / Brand Name</label>
+          <input type="text" class="form-control" id="brandModalNameInput" placeholder="e.g. WARZONE">
+          <span class="helper" style="font-size: 11px; color: var(--text-dim); margin-top: 4px; display: block;">Change this name anytime! It appears in the main header and footer.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Brand PNG Logo (Shows next to the name)</label>
+          <div style="display: flex; align-items: center; gap: 14px; margin-top: 8px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+            <div class="org-logo-slot" id="brandModalLogoPreview" style="width: 56px; height: 56px; flex-shrink: 0;">
+              WZ
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
+              <button type="button" class="btn btn-sm" onclick="UI.triggerOrgLogoUpload()" style="border-color: var(--gold); color: var(--gold); justify-content: center;">
+                <span>📁</span> Upload Custom PNG File
+              </button>
+              <button type="button" class="btn btn-sm btn-delete" style="font-size: 11px; padding: 4px 8px; justify-content: center;" onclick="UI.resetOrgLogo()">
+                <span>↺</span> Reset Logo to Initials
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-sm" onclick="UI.closeModal('brandModalBackdrop')">Cancel</button>
+        <button class="btn btn-sm btn-coral" onclick="UI.saveBrandModal()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden File Inputs for Local PNG/Image Uploads -->
+  <input type="file" id="orgLogoFileInput" accept="image/png, image/jpeg, image/webp, image/*" style="display: none;">
+  <input type="file" id="squadLogoFileInput" accept="image/png, image/jpeg, image/webp, image/*" style="display: none;">
     </div>
   </div>
 
@@ -1875,11 +2026,11 @@
     const DEFAULT_APP_STATE = {
       adminPassword: 'admin123',
       tournament: {
-        orgName: 'WARZONE OFFICIAL',
+        orgName: 'WARZONE',
         tournTitle: 'DAILY PAID SCRIM',
         tournSubtitle: 'OVERALL STANDINGS',
         matchInfo: 'WEEK 01 DAY 01',
-        footerText: 'Powered by WARZONE OFFICIAL',
+        footerText: 'Powered by WARZONE',
         logoVal: 'WZ'
       },
       scoring: DEFAULT_POINT_MATRIX,
@@ -1921,6 +2072,14 @@
         if (this.data.squads && !Array.isArray(this.data.squads) && typeof this.data.squads === 'object') {
           const firstKey = Object.keys(this.data.squads)[0] || 'grp_a';
           this.data.squads = Array.isArray(this.data.squads[firstKey]) ? this.data.squads[firstKey] : DEFAULT_SQUADS;
+        }
+
+        // Set default name to WARZONE if it was previously WARZONE OFFICIAL
+        if (this.data.tournament && this.data.tournament.orgName === 'WARZONE OFFICIAL') {
+          this.data.tournament.orgName = 'WARZONE';
+          if (!this.data.tournament.footerText || this.data.tournament.footerText.includes('WARZONE OFFICIAL')) {
+            this.data.tournament.footerText = 'Powered by WARZONE';
+          }
         }
 
         if (!this.data.adminPassword) {
@@ -2164,6 +2323,39 @@
           document.getElementById('jsonFileInput').click();
         });
         document.getElementById('jsonFileInput').addEventListener('change', (e) => this.handleRestoreJSON(e));
+
+        // Brand & Squad PNG Logo File Upload Event Listeners
+        const orgFileInput = document.getElementById('orgLogoFileInput');
+        if (orgFileInput) {
+          orgFileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+              this.handleOrgLogoFile(e.target.files[0]);
+            }
+          });
+        }
+
+        const squadFileInput = document.getElementById('squadLogoFileInput');
+        if (squadFileInput) {
+          squadFileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+              const reader = new FileReader();
+              reader.onload = (ev) => {
+                const logoInput = document.getElementById('editSquadLogo');
+                if (logoInput) logoInput.value = ev.target.result;
+                Toast.show('Squad PNG logo selected!', '📷');
+              };
+              reader.readAsDataURL(e.target.files[0]);
+            }
+          });
+        }
+
+        // Enter key in Brand Name input
+        const brandNameInput = document.getElementById('brandModalNameInput');
+        if (brandNameInput) {
+          brandNameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.saveBrandModal();
+          });
+        }
       },
 
       // --- ADMIN AUTHENTICATION CONTROLLER ---
@@ -2229,17 +2421,19 @@
 
       updateHeaderBranding() {
         const t = AppState.data.tournament;
-        document.getElementById('boardOrgName').textContent = t.orgName || 'WARZONE OFFICIAL';
+        const orgName = t.orgName || 'WARZONE';
+        document.getElementById('boardOrgName').textContent = orgName;
         document.getElementById('boardTournTitle').textContent = t.tournTitle || 'DAILY PAID SCRIM';
         document.getElementById('boardTournSubtitle').textContent = t.tournSubtitle || 'OVERALL STANDINGS';
         document.getElementById('boardMatchInfo').textContent = t.matchInfo || 'WEEK 01 DAY 01';
-        document.getElementById('boardFooterText').textContent = t.footerText || 'Powered by WARZONE OFFICIAL';
+        document.getElementById('boardFooterText').textContent = t.footerText || `Powered by ${orgName}`;
 
         const logoEl = document.getElementById('boardOrgLogo');
-        if (t.logoVal && t.logoVal.startsWith('http')) {
-          logoEl.innerHTML = `<img src="${t.logoVal}" alt="Logo">`;
+        const logoVal = t.logoVal || '';
+        if (logoVal && (logoVal.startsWith('data:image') || logoVal.startsWith('http') || logoVal.startsWith('blob:') || logoVal.includes('/'))) {
+          logoEl.innerHTML = `<img src="${logoVal}" alt="Logo">`;
         } else {
-          logoEl.textContent = t.logoVal || 'WZ';
+          logoEl.textContent = logoVal || orgName.substring(0, 2).toUpperCase() || 'WZ';
         }
 
         const count = AppState.getActiveSquads().length;
@@ -2408,6 +2602,10 @@
 
           const winBadge = sq.wins > 0 ? `<span class="booyah-star" title="${sq.wins} Booyah(s)">★ ${sq.wins}</span>` : '';
 
+          const logoContent = (sq.logo && (sq.logo.startsWith('data:image') || sq.logo.startsWith('http') || sq.logo.includes('/')))
+            ? `<img src="${sq.logo}" alt="${sq.name}">`
+            : (sq.logo || sq.name.substring(0, 2).toUpperCase());
+
           // When in Edit Mode: render direct editable inputs for M.P, WIN, POS PTS, KILL PTS!
           const mpCell = isEdit 
             ? `<input type="number" class="table-point-input" title="Edit Matches Played" min="0" value="${sq.matches || 0}" onchange="UI.updateTeamPoint('${sq.id}', 'matches', this.value)">`
@@ -2431,7 +2629,7 @@
             </td>
             <td>
               <div class="team-cell">
-                <div class="team-logo-box">${sq.logo || sq.name.substring(0, 2).toUpperCase()}</div>
+                <div class="team-logo-box">${logoContent}</div>
                 <div class="team-details">
                   <div class="team-name-text">
                     ${sq.name}
@@ -2823,10 +3021,96 @@
         }
       },
 
+      // --- BRAND & CUSTOM PNG LOGO CONTROLLERS ---
+      triggerOrgLogoUpload() {
+        const input = document.getElementById('orgLogoFileInput');
+        if (input) {
+          input.value = '';
+          input.click();
+        }
+      },
+
+      handleOrgLogoFile(file) {
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+          alert('Please select a valid image file (PNG, JPG, WEBP).');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const dataUrl = e.target.result;
+          AppState.data.tournament.logoVal = dataUrl;
+          AppState.save();
+          this.updateHeaderBranding();
+
+          const preview = document.getElementById('brandModalLogoPreview');
+          if (preview) {
+            preview.innerHTML = `<img src="${dataUrl}" alt="Logo">`;
+          }
+
+          SoundFX.save();
+          Toast.show('✅ Custom PNG Logo updated successfully!', '📷');
+        };
+        reader.readAsDataURL(file);
+      },
+
+      openBrandModal() {
+        const t = AppState.data.tournament;
+        const name = t.orgName || 'WARZONE';
+        document.getElementById('brandModalNameInput').value = name;
+
+        const preview = document.getElementById('brandModalLogoPreview');
+        if (preview) {
+          const logoVal = t.logoVal || '';
+          if (logoVal && (logoVal.startsWith('data:image') || logoVal.startsWith('http') || logoVal.startsWith('blob:') || logoVal.includes('/'))) {
+            preview.innerHTML = `<img src="${logoVal}" alt="Logo">`;
+          } else {
+            preview.textContent = logoVal || name.substring(0, 2).toUpperCase() || 'WZ';
+          }
+        }
+
+        this.openModal('brandModalBackdrop');
+        setTimeout(() => document.getElementById('brandModalNameInput').focus(), 150);
+      },
+
+      saveBrandModal() {
+        const newName = document.getElementById('brandModalNameInput').value.trim();
+        if (!newName) {
+          alert('Name cannot be empty!');
+          return;
+        }
+
+        AppState.data.tournament.orgName = newName;
+        if (!AppState.data.tournament.footerText || AppState.data.tournament.footerText.includes('Powered by')) {
+          AppState.data.tournament.footerText = `Powered by ${newName}`;
+        }
+
+        AppState.save();
+        this.updateHeaderBranding();
+        this.closeModal('brandModalBackdrop');
+
+        SoundFX.save();
+        Toast.show(`✅ Brand name updated to "${newName}"!`, '✏️');
+      },
+
+      resetOrgLogo() {
+        const name = AppState.data.tournament.orgName || 'WARZONE';
+        const initials = name.split(' ').map(w => w[0]).join('').substring(0, 3).toUpperCase() || 'WZ';
+        AppState.data.tournament.logoVal = initials;
+        AppState.save();
+        this.updateHeaderBranding();
+
+        const preview = document.getElementById('brandModalLogoPreview');
+        if (preview) preview.textContent = initials;
+
+        Toast.show('Logo reset to text initials.', '↺');
+      },
+
       // --- SETTINGS MODAL ---
       openSettingsModal() {
         const t = AppState.data.tournament;
-        document.getElementById('setOrgName').value = t.orgName || '';
+        document.getElementById('setOrgName').value = t.orgName || 'WARZONE';
         document.getElementById('setTournTitle').value = t.tournTitle || '';
         document.getElementById('setTournSubtitle').value = t.tournSubtitle || '';
         document.getElementById('setMatchInfo').value = t.matchInfo || '';
@@ -2838,11 +3122,11 @@
 
       saveSettings() {
         const t = AppState.data.tournament;
-        t.orgName = document.getElementById('setOrgName').value.trim() || 'WARZONE OFFICIAL';
+        t.orgName = document.getElementById('setOrgName').value.trim() || 'WARZONE';
         t.tournTitle = document.getElementById('setTournTitle').value.trim() || 'DAILY PAID SCRIM';
         t.tournSubtitle = document.getElementById('setTournSubtitle').value.trim() || 'OVERALL STANDINGS';
         t.matchInfo = document.getElementById('setMatchInfo').value.trim() || 'WEEK 01 DAY 01';
-        t.footerText = document.getElementById('setFooterText').value.trim() || 'Powered by WARZONE OFFICIAL';
+        t.footerText = document.getElementById('setFooterText').value.trim() || `Powered by ${t.orgName || 'WARZONE'}`;
         t.logoVal = document.getElementById('setLogoVal').value.trim() || 'WZ';
 
         // Update Admin Password if provided
@@ -2938,7 +3222,10 @@
               (element.classList && (
                 element.classList.contains('th-actions') ||
                 element.classList.contains('edit-controls-cell') ||
-                element.classList.contains('action-icon-btn')
+                element.classList.contains('action-icon-btn') ||
+                element.classList.contains('header-action-btns') ||
+                element.classList.contains('header-action-btn') ||
+                element.classList.contains('btn-camera')
               ))
             );
           }
