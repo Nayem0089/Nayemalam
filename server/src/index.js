@@ -76,30 +76,43 @@ app.use('/api/teams', teamRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/upload', uploadRoutes);
 
-// 4. Static File Hosting for Client (React/Vite Production Build)
-const CLIENT_DIST = path.join(__dirname, '../../client/dist');
-const LEGACY_ROOT = path.join(__dirname, '../../');
+// 4. Primary UI Hosting (Directly serves root index.html with all UI design)
+const ROOT_DIR = path.join(__dirname, '../../');
+const ROOT_INDEX_HTML = path.join(ROOT_DIR, 'index.html');
+const CLIENT_DIST = path.join(ROOT_DIR, 'client/dist');
 
-// Serve client assets
+console.log(`📦 Serving Primary UI from: ${ROOT_INDEX_HTML}`);
+
+// Explicit route for root URL to guarantee serving the complete UI index.html
+app.get('/', (req, res) => {
+  if (fs.existsSync(ROOT_INDEX_HTML)) {
+    return res.sendFile(ROOT_INDEX_HTML);
+  }
+  if (fs.existsSync(path.join(CLIENT_DIST, 'index.html'))) {
+    return res.sendFile(path.join(CLIENT_DIST, 'index.html'));
+  }
+  res.status(404).send('UI index.html not found');
+});
+
+// Serve assets and static files from root directory first
+app.use('/assets', express.static(path.join(ROOT_DIR, 'assets')));
+app.use('/css', express.static(path.join(ROOT_DIR, 'css')));
+app.use('/js', express.static(path.join(ROOT_DIR, 'js')));
+app.use(express.static(ROOT_DIR));
+
+// Fallback to client/dist assets if needed
 if (fs.existsSync(CLIENT_DIST)) {
-  console.log(`📦 Serving React + Vite build from: ${CLIENT_DIST}`);
   app.use(express.static(CLIENT_DIST));
-} else {
-  console.log(`📁 Client dist not built yet. Serving root assets.`);
-  app.use(express.static(LEGACY_ROOT));
 }
 
-// Ensure public assets (like logo) are accessible
-app.use('/assets', express.static(path.join(__dirname, '../../assets')));
-app.use('/assets', express.static(path.join(__dirname, '../../client/public/assets')));
-
-// 5. Catch-All Route for Single Page Application (SPA) Client Routing
+// 5. Catch-All Route for SPA Client Routing (Always serves root index.html)
 app.get('*', (req, res) => {
-  const indexHtml = path.join(CLIENT_DIST, 'index.html');
-  if (fs.existsSync(indexHtml)) {
-    res.sendFile(indexHtml);
+  if (fs.existsSync(ROOT_INDEX_HTML)) {
+    res.sendFile(ROOT_INDEX_HTML);
+  } else if (fs.existsSync(path.join(CLIENT_DIST, 'index.html'))) {
+    res.sendFile(path.join(CLIENT_DIST, 'index.html'));
   } else {
-    res.sendFile(path.join(LEGACY_ROOT, 'index.html'));
+    res.status(404).send('UI index.html not found');
   }
 });
 
